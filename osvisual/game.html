@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OS Process Swapping Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .process-list {
+      margin: 20px 0;
+    }
+
+    .process {
+      display: inline-block;
+      margin: 5px;
+      padding: 10px 15px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 20px;
+      background: #f0f0f0;
+      transition: 0.2s ease;
+    }
+
+    .process.selected {
+      background: #2196F3;
+      color: white;
+      border-color: #1976D2;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>OS Process Ordering Game</h1>
+  <p>Swap the processes to sort them by burst time (Shortest Job First).</p>
+
+  <div class="process-list" id="processList"></div>
+
+  <button onclick="checkOrder()">Check Order</button>
+  <button onclick="newGame()">New Game</button>
+
+  <div id="result"></div>
+
+  <div id="sjfInfo" style="display: none; margin-top: 20px; padding: 15px; border: 2px solid #1976D2; border-radius: 10px; background-color: #e3f2fd;">
+    <h3>What is Shortest Job First (SJF)?</h3>
+    <p>
+      SJF is a CPU scheduling algorithm that selects the process with the smallest burst time (execution time) to run next. 
+      It minimizes average waiting time and is considered optimal for batch processes. However, it can lead to <strong>starvation</strong> 
+      for longer processes if short ones keep arriving.
+    </p>
+  </div>
+
+  <script>
+    let currentOrder = [];
+    let selectedIndex = null;
+
+    function generateRandomProcesses(num = 4) {
+      const processes = [];
+      for (let i = 1; i <= num; i++) {
+        const burst = Math.floor(Math.random() * 10) + 1; // burst time 1–10
+        processes.push({ name: 'P' + i, burst: burst });
+      }
+      return processes;
+    }
+
+    function renderProcesses() {
+      const listDiv = document.getElementById('processList');
+      listDiv.innerHTML = '';
+      currentOrder.forEach((proc, index) => {
+        const procDiv = document.createElement('div');
+        procDiv.classList.add('process');
+        procDiv.textContent = `${proc.name} (Burst: ${proc.burst})`;
+
+        if (selectedIndex === index) {
+          procDiv.classList.add('selected');
+        }
+
+        procDiv.onclick = () => handleProcessClick(index);
+        listDiv.appendChild(procDiv);
+      });
+
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function handleProcessClick(index) {
+      if (selectedIndex === null) {
+        selectedIndex = index;
+      } else if (selectedIndex === index) {
+        // Deselect if same clicked twice
+        selectedIndex = null;
+      } else {
+        // Swap
+        const temp = currentOrder[selectedIndex];
+        currentOrder[selectedIndex] = currentOrder[index];
+        currentOrder[index] = temp;
+        selectedIndex = null;
+      }
+      renderProcesses();
+    }
+
+    function checkOrder() {
+      const sortedOrder = [...currentOrder].sort((a, b) => a.burst - b.burst);
+      const correct = currentOrder.every((proc, idx) =>
+        proc.burst === sortedOrder[idx].burst
+      );
+
+      const resultDiv = document.getElementById('result');
+      const sjfInfo = document.getElementById('sjfInfo');
+
+      if (correct) {
+        resultDiv.textContent = '✅ Correct order!';
+        resultDiv.style.color = 'green';
+        sjfInfo.style.display = 'block'; // Show SJF info
+      } else {
+        resultDiv.textContent = '❌ Incorrect order. Try again.';
+        resultDiv.style.color = 'red';
+        sjfInfo.style.display = 'none'; // Hide SJF info
+      }
+    }
+
+    function newGame() {
+      currentOrder = generateRandomProcesses();
+      selectedIndex = null;
+      renderProcesses();
+      document.getElementById('sjfInfo').style.display = 'none'; // Hide SJF info on new game
+    }
+
+    // Init on load
+    window.onload = newGame;
+  </script>
+
+</body>
+</html>
+SS

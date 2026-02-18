@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>CPU Scheduling Algorithms</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="icon" href="images/OS.ico" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="simulator/cpu-scheduling/cpu-scheduling-layout.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+		<script src="pdf.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+	</head>
+	<body class="is-preload">
+		<div id="page-wrapper">
+
+			<!-- Header -->
+				<header id="header">
+					<h1>SCHEDULIX</h1>
+					<nav id="nav">
+						<ul>
+							<li><a href="index.html">Home</a></li>
+							<li>
+								<a href="index.html#os-algorithms" class="icon solid fa-angle-down">OS Algorithms</a>
+								<ul>
+									<li>
+										<a href="cpu-scheduling.html">CPU Scheduling</a>
+									</li>
+									<li>
+										<a href="disk-scheduling.html">Disk Scheduling</a>
+									</li>
+									<li>
+										<a href="page-replacement.html">Page Replacement</a>
+									</li>
+									<li>
+										<a href="deadlock-avoidance.html">Deadlock Avoidance</a>
+									</li>
+									<li>
+										<a href="memory-allocation.html">Memory Allocation</a>
+									</li>
+								</ul>
+							</li>
+							<li><a href="tutorial.html">Tutorial</a></li>
+							
+							<li><a href="index.html#team">About Team</a></li>
+							
+						</ul>
+					</nav>
+				</header>
+
+			<!-- Main -->
+				<section id="main" class="container">
+					<header>
+						<h2>CPU Scheduling Algorithms</h2>
+						<p>Let's understand and visualise 5 categories of CPU Scheduling Algorithms.</p>
+					</header>
+					<div class="box">
+						<span class="image featured"><img src="images/cpu-sch.jpg" alt="" /></span>
+						<h3>What is CPU Scheduling?</h3>
+						<p>CPU Scheduling is a process of determining which process will own CPU for execution while another process is on hold. The main task of CPU scheduling is to make sure that whenever the CPU remains idle, the OS at least select one of the processes available in the ready queue for execution. The selection process will be carried out by the CPU scheduler. It selects one of the processes in memory that are ready for execution.</p>
+						<div class="row">
+							<div class="row-6 row-12-mobilep">
+								<h3>Important Terminologies</h3>
+								<p><li>Burst Time/Execution Time: It is a time required by the process to complete execution. It is also called running time. </li> <li>Arrival Time: when a process enters in a ready state </li><li>Finish Time: when process complete and exit from a system </li> <li>Multiprogramming: A number of programs which can be present in memory at the same time. </li> <li>Jobs: It is a type of program without any kind of user interaction. </li><li>User: It is a kind of program having user interaction. </li><li>Process: It is the reference that is used for both job and user. </li> <li>CPU/IO burst cycle: Characterizes process execution, which alternates between CPU and I/O activity. </li> <li>CPU times are usually shorter than the time of I/O.</li></p>
+							</div>
+							<div class="row-6 row-12-mobilep">
+		
+								<h3>Demo of CPU Scheduling Algorithms</h3>
+								<p>In this section, we shall visualise the working of CPU Scheduling Algorithms through Gantt Chart, Process Table, and Comparison Graphs. Note: Process ID is the tiebreaker.</p>
+
+								<!-- Algorithm-->
+
+							    	<div class="algoblock" id="invoice">
+							
+							        <form id="algorithms-form">
+							            <label for="algo"><h1>Algorithms : </h1></label>
+							            <select name="algo" id="algo">
+							                <option value="fcfs">First Come First Serve (FCFS)</option>
+							                <option value="sjf">Shortest Job First (SJF)</option>
+							                <option value="srtf">Shortest Remaining Job First (SRTF)</option>
+							                <option value="rr">Round Robin</option>
+							                <option value="pp">Priority (Preemptive)</option>
+							            </select>
+							        </form>
+							        
+							          <div id = "preferences" class = "hide">
+							            Priority : 1 is
+							            <button class="buttonclass prioritybutton" id="priority-toggle-btn">
+							                <span id="priority-preference">high</span>
+							                <i class="fa fa-refresh"></i>
+							            </button>
+							    	</div>
+							    	<br>
+							        <table class="main-table">
+							            <thead>
+							                <tr>
+							                    <th class="process-id"><b>Process ID</b></th>
+							                    <th class="priority hide"><b>Priority</b></th>
+							                    <th class="arrival-time"><b>Arrival Time</b></th>
+							                    <th class="process-time" colspan="1"><b>Process Time</b></th>
+							                </tr>
+							            </thead>
+							            <tbody>
+							                <tr>
+							                    <td class="process-id" rowspan="2">P1</td>
+							                    <td class="priority hide" rowspan="2"><input type="number" min="1" step="1" value="1"></td>
+							                    <td class="arrival-time" rowspan="2"><input type="number" min="0" step="1" value="0"> </td>
+							                    <td class="process-time cpu process-heading" colspan="">CPU</td>
+							                </tr>
+							                <tr>
+							                    <td class="process-time cpu process-input"><input type="number" min="1" step="1" value="1"> </td>
+							                </tr>
+							            </tbody>
+							        </table>	
+							        <div class="cl">
+
+							        <button type="button" class="add-btn buttonclass button alt small" style="float: left;" data-html2canvas-ignore="true">+ Add Process</button>
+							        <button type="button" class="remove-btn buttonclass button alt small" style="float: right;" data-html2canvas-ignore="true">- Delete Process</button>
+							        <br>
+							        <br>
+							    	</div>
+							        <div id="time-quantum" class="hide">
+							            <br>
+							            <label for="tq"><b>Time Quantum : </b></label>
+							            <input type="number" name="Time Quantum" id="tq" min="1" step="1" value="1">
+							        </div>
+							        <br>
+									<div class="html2pdf__page-break"></div>
+							    	<ul class="actions special">
+									<li><button type="button" class="button icon solid fa-calculator" id="calculate"  data-html2canvas-ignore="true">Calculate</button></li>
+									<li><button type="button" class="button icon solid fa-download" id="download"  data-html2canvas-ignore="true">Download Results</button></li>
+									<li><button type="button" id="reset" class="button icon solid fa-undo" onClick="window.location.reload();"  data-html2canvas-ignore="true">Reset</button></li>
+									</ul>
+									
+									<div class="otbottom">
+							        <div id="output"></div>
+							        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+							        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
+							        <script src="simulator/cpu-scheduling/cpu-scheduling-script.js"></script>
+							    	</div>
+							        <!-- Algo script ends-->
+							    </div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+			<!-- Footer -->
+				<footer id="footer">
+					
+					<ul class="copyright">
+						<li>&copy; All Rights Reserved.</li>
+					</ul>
+				</footer>
+
+		</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
+<!-- bottom of your .html page -->
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+  <a href="logout.php" style="color: red; text-decoration: none;">Logout</a>
+</div>

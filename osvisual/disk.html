@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disk Scheduling Game</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  font-family: "Poppins", sans-serif;
+  background: radial-gradient(circle at top, #0b0b0b, #000);
+  color: #eee;
+  text-align: center;
+  padding: 20px;
+}
+h1 {
+  color: #00d4ff;
+  text-shadow: 0 0 8px #00d4ff;
+  margin-bottom: 20px;
+}
+.input-box {
+  background: rgba(25,25,25,0.9);
+  padding: 20px;
+  border-radius: 12px;
+  display: inline-block;
+  border: 1px solid #00d4ff44;
+  box-shadow: 0 0 15px rgba(0,212,255,0.2);
+  margin-bottom: 25px;
+}
+select, input, button {
+  margin: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #00d4ff55;
+  background: #111;
+  color: white;
+}
+button {
+  cursor: pointer;
+  background: linear-gradient(90deg,#00d4ff,#00ffaa);
+  color: #000;
+  font-weight: bold;
+  transition: 0.3s;
+}
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px #00ffaa77;
+}
+#requests {
+  margin: 20px auto;
+}
+.req-btn {
+  margin: 4px;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid #00d4ff;
+  background: #111;
+  color: #eee;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.req-btn:hover {
+  transform: scale(1.1);
+}
+#feedback {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+#finalMsg {
+  font-size: 20px;
+  color: #00ffaa;
+  font-weight: bold;
+  margin-top: 20px;
+  text-shadow: 0 0 8px #00ffaa;
+}
+canvas {
+  margin-top: 20px;
+  background-color: #111;
+  border: 2px solid #00d4ff;
+  border-radius: 8px;
+}
+button#submitBtn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h1>Disk Scheduling Game 🎮</h1>
+
+<div class="input-box">
+  <label><b>Algorithm:</b></label>
+  <select id="algorithm">
+    <option value="FCFS">FCFS</option>
+    <option value="SSTF">SSTF</option>
+    <option value="SCAN">SCAN</option>
+    <option value="CSCAN">C-SCAN</option>
+    <option value="LOOK">LOOK</option>
+    <option value="CLOOK">C-LOOK</option>
+  </select>
+  <br>
+  <label><b>No. of Requests:</b></label>
+  <input type="number" id="numRequests" value="6" min="4" max="10">
+  <br>
+  <label><b>Disk Range (0 to N):</b></label>
+  <input type="number" id="diskSize" value="199" min="50" max="999">
+  <br>
+  <label><b>Initial Head Position:</b></label>
+  <input type="number" id="headPos" value="50" min="0" max="199">
+  <br>
+  <button onclick="startGame()">Generate Random Requests</button>
+</div>
+
+<div id="requests"></div>
+<button id="submitBtn" onclick="checkAnswer()">Submit Sequence</button>
+<p id="feedback"></p>
+<p id="finalMsg"></p>
+<button onclick="replaySimulation()" id="replayBtn" style="display:none;">▶ Watch Correct Sequence</button>
+
+<canvas id="diskChart" width="800" height="400"></canvas>
+
+<script>
+let requests = [];
+let studentSequence = [];
+let algorithm = "FCFS";
+let headPos = 0;
+let correctSequence = [];
+let chart;
+
+function startGame(){
+  algorithm = document.getElementById("algorithm").value;
+  const numReq = parseInt(document.getElementById("numRequests").value);
+  const diskSize = parseInt(document.getElementById("diskSize").value);
+  headPos = parseInt(document.getElementById("headPos").value);
+
+  requests = [];
+  while(requests.length<numReq){
+    let r = Math.floor(Math.random()*diskSize);
+    if(!requests.includes(r) && r!==headPos) requests.push(r);
+  }
+
+  studentSequence=[];
+  renderRequests();
+  renderChart([]);
+  computeCorrectSequence();
+  document.getElementById("feedback").textContent="";
+  document.getElementById("finalMsg").textContent="";
+  document.getElementById("replayBtn").style.display="none";
+  document.getElementById("submitBtn").style.display="inline-block";
+}
+
+function renderRequests(){
+  const div = document.getElementById("requests");
+  div.innerHTML="<b>Select Requests in Order:</b><br>";
+  requests.forEach((r,i)=>{
+    const btn = document.createElement("button");
+    btn.className="req-btn";
+    btn.textContent=r;
+    btn.onclick=()=>selectRequest(i,btn);
+    div.appendChild(btn);
+  });
+}
+
+function selectRequest(index,btn){
+  studentSequence.push(requests[index]);
+  btn.disabled=true;
+  btn.style.background="#00ffaa";
+  renderChart([headPos,...studentSequence]);
+}
+
+function renderChart(data){
+  if(chart) chart.destroy();
+  const ctx = document.getElementById("diskChart").getContext("2d");
+  chart = new Chart(ctx,{
+    type:"line",
+    data:{
+      labels: data.map((_,i)=>i),
+      datasets:[{
+        label:"Disk Head Movement",
+        data: data,
+        borderColor:"#00ffaa",
+        backgroundColor:"rgba(0,255,170,0.3)",
+        fill:true,
+        tension:0.3,
+        pointBackgroundColor:"#00ffaa",
+        pointRadius:6
+      }]
+    },
+    options:{
+      indexAxis: 'x',
+      scales:{
+        y:{
+          beginAtZero:true,
+          title:{display:true,text:"Cylinder"}
+        },
+        x:{
+          title:{display:true,text:"Sequence"}
+        }
+      }
+    }
+  });
+}
+
+function computeCorrectSequence(){
+  let seq = [];
+  let reqs = [...requests];
+  let head = headPos;
+
+  if(algorithm==="FCFS"){
+    seq = [...reqs];
+  } else if(algorithm==="SSTF"){
+    while(reqs.length>0){
+      reqs.sort((a,b)=>Math.abs(a-head)-Math.abs(b-head));
+      seq.push(reqs[0]);
+      head=reqs[0];
+      reqs.shift();
+    }
+  } else if(algorithm==="SCAN"){
+    let up = reqs.filter(r=>r>=head).sort((a,b)=>a-b);
+    let down = reqs.filter(r=>r<head).sort((a,b)=>b-a);
+    seq = [...up,...down];
+  } else if(algorithm==="CSCAN"){
+    let up = reqs.filter(r=>r>=head).sort((a,b)=>a-b);
+    let down = reqs.filter(r=>r<head).sort((a,b)=>a-b);
+    seq = [...up,...down];
+  } else if(algorithm==="LOOK"){
+    let up = reqs.filter(r=>r>=head).sort((a,b)=>a-b);
+    let down = reqs.filter(r=>r<head).sort((a,b)=>b-a);
+    seq = [...up,...down];
+  } else if(algorithm==="CLOOK"){
+    let up = reqs.filter(r=>r>=head).sort((a,b)=>a-b);
+    let down = reqs.filter(r=>r<head).sort((a,b)=>a-b);
+    seq = [...up,...down];
+  }
+  correctSequence=seq;
+}
+
+function checkAnswer(){
+  let correct = true;
+  if(studentSequence.length!==correctSequence.length) correct=false;
+  for(let i=0;i<studentSequence.length;i++){
+    if(studentSequence[i]!==correctSequence[i]){
+      correct=false;
+      break;
+    }
+  }
+  const fb=document.getElementById("feedback");
+  if(correct){
+    fb.textContent="✅ Solved Correctly!";
+  } else {
+    fb.textContent="❌ Wrong Answer";
+  }
+  document.getElementById("replayBtn").style.display="inline-block";
+}
+
+async function replaySimulation(){
+  let simSeq = [headPos];
+  for(let r of correctSequence){
+    simSeq.push(r);
+    renderChart(simSeq);
+    await new Promise(res=>setTimeout(res,500));
+  }
+  document.getElementById("feedback").textContent="🎬 Simulation Complete!";
+  document.getElementById("finalMsg").textContent=`Algorithm: ${algorithm}`;
+}
+</script>
+
+</body>
+</html>

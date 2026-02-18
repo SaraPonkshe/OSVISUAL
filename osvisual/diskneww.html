@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Disk Scheduling Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    body { background: linear-gradient(180deg,#0f172a 0%, #081028 100%); color: #e6eef8; }
+    .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); }
+    .track { height: 80px; border-radius: 8px; background: linear-gradient(90deg,#0b1220,#09121b); box-shadow: inset 0 -8px 24px rgba(0,0,0,0.6); }
+    .tick { height: 100%; display:flex; align-items:center; justify-content:center; color:#99a7c7; font-size:12px; }
+    .head { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg,#ffd166,#ff9f1c); box-shadow: 0 6px 18px rgba(255,159,28,0.24), 0 0 12px rgba(255,210,120,0.06); position:absolute; top:50%; transform:translateY(-50%); }
+    .req-dot { width:14px; height:14px; border-radius:50%; background:linear-gradient(180deg,#60a5fa,#3b82f6); position:absolute; top:50%; transform:translateY(-50%); box-shadow:0 6px 14px rgba(59,130,246,0.18); }
+    .glow { filter: drop-shadow(0 8px 28px rgba(96,165,250,0.12)); }
+    .btn-cta { background: linear-gradient(90deg,#7c3aed,#06b6d4); }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-semibold">Mini Disk Scheduling — Interactive Game</h1>
+        <p class="text-sm text-slate-300">Enter requests, pick an algorithm and watch the disk head navigate the tracks. Learn by playing!</p>
+      </div>
+      <div class="text-right text-sm opacity-80">Libraries: Chart.js • GSAP • Tailwind</div>
+    </header>
+
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <section class="card p-4 rounded-lg md:col-span-1">
+        <h2 class="text-lg font-medium mb-3">Controls</h2>
+        <label class="block text-sm mb-1">Number of Tracks (0 .. N)</label>
+        <input id="maxTrack" type="number" min="10" value="199" class="w-full p-2 rounded bg-transparent border border-slate-700 mb-3" />
+
+        <label class="block text-sm mb-1">Requests (comma separated)</label>
+        <input id="requests" type="text" placeholder="e.g. 55, 58, 39, 18, 90" value="55, 58, 39, 18, 90, 160, 150, 38" class="w-full p-2 rounded bg-transparent border border-slate-700 mb-3" />
+
+        <label class="block text-sm mb-1">Initial Head Position</label>
+        <input id="headStart" type="number" min="0" value="50" class="w-full p-2 rounded bg-transparent border border-slate-700 mb-3" />
+
+        <label class="block text-sm mb-1">Algorithm</label>
+        <select id="algorithm" class="w-full p-2 rounded bg-transparent border border-slate-700 mb-3">
+          <option>FCFS</option>
+          <option>SSTF</option>
+          <option>SCAN</option>
+          <option>C-SCAN</option>
+          <option>LOOK</option>
+          <option>C-LOOK</option>
+        </select>
+
+        <div class="flex gap-2">
+          <button id="runBtn" class="flex-1 py-2 rounded btn-cta font-medium">Run & Animate</button>
+          <button id="resetBtn" class="flex-0 py-2 px-4 rounded border border-slate-700">Reset</button>
+        </div>
+
+        <hr class="my-3 border-slate-800" />
+        <div class="text-sm">
+          <p><strong>Total head movement:</strong> <span id="totalMovement">—</span></p>
+          <p><strong>Sequence:</strong></p>
+          <div id="sequence" class="text-xs text-slate-300 mt-2 break-words">—</div>
+        </div>
+      </section>
+
+      <section class="card p-4 rounded-lg md:col-span-2">
+        <h2 class="text-lg font-medium mb-3">Visualization</h2>
+        <div class="relative track rounded p-3 mb-4" id="trackContainer">
+          <div id="track" class="track relative overflow-hidden" style="height:90px;"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card p-3 rounded-lg">
+            <h3 class="font-medium text-sm mb-2">Head Position over Time</h3>
+            <canvas id="posChart" height="120"></canvas>
+          </div>
+          <div class="card p-3 rounded-lg">
+            <h3 class="font-medium text-sm mb-2">Movement per Step</h3>
+            <canvas id="distChart" height="120"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-6 text-xs text-slate-400">Tip: Try different algorithms and compare total head movement. Use realistic sequences to test fairness vs throughput.</footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const maxTrackInput = $('maxTrack');
+    const reqInput = $('requests');
+    const headStartInput = $('headStart');
+    const algoSelect = $('algorithm');
+    const runBtn = $('runBtn');
+    const resetBtn = $('resetBtn');
+    const sequenceDiv = $('sequence');
+    const totalMovementSpan = $('totalMovement');
+    const trackDiv = $('track');
+    let posChart, distChart;
+
+    function parseRequests() {
+      const maxTrack = Math.max(1, parseInt(maxTrackInput.value) || 199);
+      let arr = (reqInput.value || '').split(/[,\s]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n=>!Number.isNaN(n));
+      arr = arr.map(n => Math.max(0, Math.min(maxTrack, Math.floor(n))));
+      const head = Math.max(0, Math.min(maxTrack, Math.floor(parseInt(headStartInput.value) || 0)));
+      return { maxTrack, requests: arr, head };
+    }
+
+    function fcfs(requests, head) {
+      return orderFromHead(head, [...requests]);
+    }
+
+    function sstf(requests, head) {
+      const remaining = [...requests];
+      const order = [];
+      let cur = head;
+      while (remaining.length) {
+        let idx = 0; let best = Math.abs(remaining[0] - cur);
+        for (let i = 1; i < remaining.length; i++) {
+          const d = Math.abs(remaining[i] - cur);
+          if (d < best) { best = d; idx = i; }
+        }
+        order.push(remaining.splice(idx,1)[0]);
+        cur = order[order.length-1];
+      }
+      return orderFromHead(head, order);
+    }
+
+    function scan(requests, head, maxTrack) {
+      const left = requests.filter(r=>r<=head).sort((a,b)=>b-a);
+      const right = requests.filter(r=>r>head).sort((a,b)=>a-b);
+      const order = [...left, ...right];
+      return orderFromHead(head, order);
+    }
+
+    function cscan(requests, head, maxTrack) {
+      const right = requests.filter(r=>r>=head).sort((a,b)=>a-b);
+      const left = requests.filter(r=>r<head).sort((a,b)=>a-b);
+      const order = [...right, ...left];
+      return orderFromHead(head, order);
+    }
+
+    function look(requests, head) {
+      const left = requests.filter(r=>r<=head).sort((a,b)=>b-a);
+      const right = requests.filter(r=>r>head).sort((a,b)=>a-b);
+      const order = [...left, ...right];
+      return orderFromHead(head, order);
+    }
+
+    function clook(requests, head) {
+      const right = requests.filter(r=>r>=head).sort((a,b)=>a-b);
+      const left = requests.filter(r=>r<head).sort((a,b)=>a-b);
+      const order = [...right, ...left];
+      return orderFromHead(head, order);
+    }
+
+    function orderFromHead(head, order) { return [head, ...order]; }
+
+    function computeSequence(algorithm, requests, head, maxTrack) {
+      if (requests.length === 0) return [head];
+      switch(algorithm) {
+        case 'FCFS': return fcfs(requests, head);
+        case 'SSTF': return sstf(requests, head);
+        case 'SCAN': return scan(requests, head, maxTrack);
+        case 'C-SCAN': return cscan(requests, head, maxTrack);
+        case 'LOOK': return look(requests, head);
+        case 'C-LOOK': return clook(requests, head);
+        default: return fcfs(requests, head);
+      }
+    }
+
+    function computeDistance(seq) {
+      let total = 0; const dlist = [];
+      for (let i=1;i<seq.length;i++){ const d = Math.abs(seq[i]-seq[i-1]); dlist.push(d); total+=d; }
+      return { total, dlist };
+    }
+
+    function clearTrack() { trackDiv.innerHTML = ''; trackDiv.style.position = 'relative'; }
+
+    function createTicks(maxTrack, count=11){
+      for (let i=0;i<count;i++){
+        const t = document.createElement('div');
+        t.className='tick absolute';
+        const x = (i/(count-1))*100;
+        t.style.left = `calc(${x}% - 20px)`;
+        t.innerHTML = Math.round((x/100)*maxTrack);
+        trackDiv.appendChild(t);
+      }
+    }
+
+    function placeRequestsOnTrack(requests, maxTrack) {
+      requests.forEach((r)=>{
+        const el = document.createElement('div');
+        el.className = 'req-dot glow';
+        const left = (r / maxTrack) * 100;
+        el.style.left = `calc(${left}% - 7px)`;
+        el.title = String(r);
+        trackDiv.appendChild(el);
+      });
+    }
+
+    function createHeadAt(positionPercent){
+      const head = document.createElement('div');
+      head.className = 'head glow';
+      head.style.left = `calc(${positionPercent}% - 9px)`;
+      head.id = 'diskHead';
+      trackDiv.appendChild(head);
+      return head;
+    }
+
+    function percentFor(track, maxTrack){ return (track/maxTrack)*100; }
+
+    function createCharts(){
+      const posCtx = document.getElementById('posChart').getContext('2d');
+      const distCtx = document.getElementById('distChart').getContext('2d');
+      if (posChart) { posChart.destroy(); distChart.destroy(); }
+      posChart = new Chart(posCtx, { type: 'line', data: { labels: [], datasets: [{ label:'Head pos', data:[], fill:false, tension:0.25 }]}, options:{responsive:true, plugins:{legend:{display:false}}} });
+      distChart = new Chart(distCtx, { type: 'bar', data: { labels: [], datasets: [{ label:'Move', data:[] }]}, options:{responsive:true, plugins:{legend:{display:false}}} });
+    }
+
+    function updateCharts(sequence, distances){
+      const labels = sequence.map((s,i)=>i);
+      posChart.data.labels = labels;
+      posChart.data.datasets[0].data = sequence;
+      posChart.update();
+      distChart.data.labels = labels.slice(1);
+      distChart.data.datasets[0].data = distances;
+      distChart.update();
+    }
+
+    function run() {
+      const { maxTrack, requests, head } = parseRequests();
+      const algo = algoSelect.value;
+      const seq = computeSequence(algo, requests, head, maxTrack);
+      const { total, dlist } = computeDistance(seq);
+      totalMovementSpan.textContent = total;
+      sequenceDiv.textContent = seq.join(' → ');
+      clearTrack();
+      createTicks(maxTrack, 11);
+      placeRequestsOnTrack(requests, maxTrack);
+      const headPercent = percentFor(head, maxTrack);
+      const headEl = createHeadAt(headPercent);
+      createCharts();
+      updateCharts(seq, dlist);
+      const tl = gsap.timeline();
+      for (let i=1;i<seq.length;i++){
+        const leftPercent = percentFor(seq[i], maxTrack);
+        tl.to(headEl, { duration: Math.max(0.4, Math.abs(seq[i]-seq[i-1])/70), left: `calc(${leftPercent}% - 9px)`, ease:'power1.inOut' }, '+=0.2');
+        tl.to(headEl, { scale: 1.4, duration:0.12, yoyo:true, repeat:1 }, '-=0.02');
+      }
+      tl.to(headEl, { boxShadow: '0 10px 30px rgba(124,58,237,0.18)', duration:0.6 }, '+=0.1');
+      Array.from(trackDiv.querySelectorAll('.req-dot')).forEach(el=>{
+        el.addEventListener('mouseenter', ()=>{ gsap.to(el, { scale:1.25, duration:0.15 }); });
+        el.addEventListener('mouseleave', ()=>{ gsap.to(el, { scale:1, duration:0.15 }); });
+      });
+    }
+
+    function resetVisualization(){
+      clearTrack();
+      totalMovementSpan.textContent = '—';
+      sequenceDiv.textContent = '—';
+      if (posChart) posChart.destroy();
+      if (distChart) distChart.destroy();
+    }
+
+    runBtn.addEventListener('click', ()=>{ try{ run(); } catch(e){ alert('Error: '+e.message); console.error(e);} });
+    resetBtn.addEventListener('click', resetVisualization);
+
+    window.addEventListener('load', ()=>{ setTimeout(()=>{ createTicks(parseInt(maxTrackInput.value||199), 11); }, 80); });
+    window.addEventListener('keydown', (e)=>{ if (e.key.toLowerCase()==='r') run(); });
+  </script>
+</body>
+</html>

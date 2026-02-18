@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Join Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Join Game</h1>
+
+  <div class="card">
+    <div>
+      <label><b>Game Code</b></label><br/>
+      <input id="code" class="input" placeholder="ABC123" />
+    </div>
+    <div>
+      <label><b>Your Name</b></label><br/>
+      <input id="name" class="input" placeholder="Type your name" />
+    </div>
+    <button id="joinBtn">Join</button>
+    <p class="small">You will wait until the host starts the game.</p>
+  </div>
+
+  <script type="module">
+    import { initJoinPage } from "./mpPlayer.js";
+    initJoinPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+body{font-family:Poppins,sans-serif;background:radial-gradient(circle at top,#0b0b0b,#000);color:#eee;text-align:center;padding:20px}
+h1{color:#00d4ff;text-shadow:0 0 8px #00d4ff;margin-bottom:20px}
+.input-box,.card{background:rgba(25,25,25,.9);padding:20px;border-radius:12px;display:inline-block;border:1px solid #00d4ff44;box-shadow:0 0 15px rgba(0,212,255,.2);margin-bottom:15px}
+select,input,button{margin:6px;padding:8px;border-radius:6px;border:1px solid #00d4ff55;background:#111;color:#fff}
+button{cursor:pointer;background:linear-gradient(90deg,#00d4ff,#00ffaa);color:#000;font-weight:700;transition:.3s}
+button:hover{transform:scale(1.05);box-shadow:0 0 10px #00ffaa77}
+.small{opacity:.9;font-size:.95rem}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #00d4ff55;background:#111}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.table{width:min(900px,95vw);margin:12px auto;border-collapse:collapse}
+.table th,.table td{border:1px solid #00d4ff33;padding:10px}
+
+/* Memory layout (same as your page) */
+#memory{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;margin:20px auto;max-width:220px}
+.mem-block{width:150px;height:80px;margin:5px 0;border-radius:6px;background:#111;border:2px solid #00d4ff;color:#eee;display:flex;justify-content:center;align-items:center;flex-direction:column;cursor:pointer;transition:transform .2s, background .3s}
+.mem-block:hover{transform:scale(1.05)}
+.process-selector{margin:10px}
