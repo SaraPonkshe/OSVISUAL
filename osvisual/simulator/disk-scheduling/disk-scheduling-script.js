@@ -638,6 +638,34 @@ function getBitStreamAndPlot(event, r1, ini, final, alg, side){
 
                 document.getElementById("graph_area").style.visibility = "visible";
                 cmprPlot(event, document.getElementById('bitstream-input').value, document.getElementById('initial-input').value, document.getElementById('final-input').value, document.getElementById('direction').value);
+                /*addition*/
+                // ── Chatbot integration ──
+if (window.DiskSchedulixChat) {
+    const algoNames = {
+        fcfs: "FCFS", sstf: "SSTF", scan: "SCAN",
+        "c-scan": "C-SCAN", look: "LOOK", "c-look": "C-LOOK"
+    };
+
+    // Build traversal order from plot data
+    const traversalOrder = data[0].x.map(String);
+
+    // Build comparison seek times
+    const comparison = {
+        FCFS: v1, SSTF: v2, SCAN: v3,
+        "C-SCAN": v4, LOOK: v5, "C-LOOK": v6
+    };
+
+    DiskSchedulixChat.updateContext({
+        algorithm: algoNames[alg] || alg.toUpperCase(),
+        requestQueue: inp,
+        initialCylinder: ini,
+        lastCylinder: final,
+        direction: (alg === "scan" || alg === "c-scan" || alg === "look" || alg === "c-look") ? dir : null,
+        traversalOrder,
+        seekTime: seek,
+        comparison,
+    });
+}
         }
 
 }

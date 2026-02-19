@@ -675,8 +675,133 @@ function calculateOutput() {
     CPUScheduler(mainInput, mainUtility, mainOutput);
     setOutput(mainInput, mainOutput);
     showOutput(mainInput, mainOutput, outputDiv);
+
+    // ── Chatbot integration ──
+    if (window.SchedulixChat) {
+        const algoNames = {
+            fcfs: "First Come First Serve (FCFS)",
+            sjf:  "Shortest Job First (SJF)",
+            srtf: "Shortest Remaining Time First (SRTF)",
+            rr:   "Round Robin (RR)",
+            pp:   "Priority Preemptive (PP)",
+        };
+
+        // Build processes array from mainInput
+        const processes = mainInput.processId.map(i => ({
+            id: "P" + (i + 1),
+            arrivalTime: mainInput.arrivalTime[i],
+            burstTime: mainInput.totalBurstTime[i],
+            priority: mainInput.algorithm === "pp" ? mainInput.priority[i] : null,
+        }));
+
+        // Build execution timeline from reduced schedule
+        let cursor = 0;
+        const executionOrder = mainOutput.schedule
+            .filter(s => s[0] > 0)
+            .map(s => {
+                const entry = { process: "P" + s[0], start: cursor, end: cursor + s[1] };
+                cursor += s[1];
+                return entry;
+            });
+
+        // Build per-process metrics
+        const metrics = {};
+        mainInput.processId.forEach(i => {
+            metrics["P" + (i + 1)] = {
+                waitTime: mainOutput.waitingTime[i],
+                turnaroundTime: mainOutput.turnAroundTime[i],
+                completionTime: mainOutput.completionTime[i],
+            };
+        });
+console.log("processes being sent:", processes);
+console.log("mainInput.processId:", mainInput.processId);
+        SchedulixChat.updateContext({
+            algorithm: algoNames[mainInput.algorithm] || mainInput.algorithm.toUpperCase(),
+            timeQuantum: mainInput.algorithm === "rr" ? mainInput.timeQuantum : null,
+            processes,
+            executionOrder,
+            metrics,
+            averageWaitTime: +mainOutput.averageTimes[2].toFixed(2),
+            averageTurnaround: +mainOutput.averageTimes[1].toFixed(2),
+        });
+    }
 }
 
 document.getElementById("calculate").onclick = () => {
     calculateOutput();
 };
+// ============================================================
+// INTEGRATION SNIPPET — add this to cpu-scheduling-script.js
+// ============================================================
+// Find the place in your script where you finish calculating
+// (right after you render the Gantt chart / output table)
+// and paste this block there.
+// ============================================================
+
+// --- STEP 1: Map your algo select value to a readable name ---
+const ALGO_NAMES = {
+  fcfs: "First Come First Serve (FCFS)",
+  sjf:  "Shortest Job First (SJF)",
+  srtf: "Shortest Remaining Time First (SRTF)",
+  rr:   "Round Robin (RR)",
+  pp:   "Priority Preemptive",
+};
+
+// --- STEP 2: After your calculate logic finishes, build context ---
+// (Replace the example values below with your real variables)
+
+function notifyChatbot() {
+  // Read algo from your existing dropdown
+  const algoKey = document.getElementById("algo").value;
+
+  // Read processes from your existing table rows
+  // Adjust this to match how you store process data internally
+  const processes = window.__schedulixProcesses || [];
+  // ^ If you don't have a global, just build the array here from DOM:
+  // const rows = document.querySelectorAll("tbody tr:first-child");
+  // const processes = [...rows].map((row, i) => ({
+  //   id: `P${i+1}`,
+  //   arrivalTime: +row.querySelector(".arrival-time input").value,
+  //   burstTime: +row.querySelector(".process-time.process-input input").value,
+  //   priority: row.querySelector(".priority input")?.value ?? null,
+  // }));
+
+  // Use your real computed results here:
+  const context = {
+    algorithm: ALGO_NAMES[algoKey] || algoKey,
+    timeQuantum: algoKey === "rr" ? +document.getElementById("tq").value : null,
+    processes: processes,
+    executionOrder: window.__schedulixTimeline || [], // your Gantt data
+    metrics: window.__schedulixMetrics || {},         // per-process metrics
+    averageWaitTime: window.__schedulixAvgWait ?? null,
+    averageTurnaround: window.__schedulixAvgTurnaround ?? null,
+  };
+
+  // Fire the chatbot update
+  if (window.SchedulixChat) {
+    SchedulixChat.updateContext(context);
+  }
+}
+
+// --- STEP 3: Call notifyChatbot() at the end of your calculate handler ---
+// Find your existing calculate button handler and add this at the bottom:
+//
+// document.getElementById("calculate").addEventListener("click", function () {
+//   // ... your existing scheduling logic ...
+//   notifyChatbot(); // <-- add this line
+// });
+
+
+// ============================================================
+// EXAMPLE of the data shapes your existing script likely has
+// ============================================================
+//
+// executionOrder (Gantt blocks):
+//   [ { process: "P2", start: 0, end: 12 },
+//     { process: "P1", start: 12, end: 13 } ]
+//
+// metrics (per-process):
+//   { P1: { waitTime: 9, turnaroundTime: 10, completionTime: 13 },
+//     P2: { waitTime: 0, turnaroundTime: 12, completionTime: 12 } }
+//
+// ============================================================
