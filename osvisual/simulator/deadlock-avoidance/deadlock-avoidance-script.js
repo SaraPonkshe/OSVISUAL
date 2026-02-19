@@ -495,6 +495,32 @@ function suivantCalcul() {
         }
 
     }
+    // ── Chatbot integration ──
+if (window.DeadlockChat) {
+    // Capture available after calculation
+    const availableSnapshot = [];
+    for (let x = 0; x < nbResources; x++) {
+        availableSnapshot.push(getAvailable(x));
+    }
+
+    // Deep copy matrices
+    const maxCopy = max.map(row => [...row]);
+    const allocCopy = allocation.map(row => [...row]);
+    const needCopy = need.map(row => [...row]);
+
+    DeadlockChat.updateContext({
+        nbProc: parseInt(nbProc),
+        nbResources: parseInt(nbResources),
+        resources: [...resources],
+        available: availableSnapshot,
+        max: maxCopy,
+        allocation: allocCopy,
+        need: needCopy,
+        safeSequence: [...seq],
+        deadlock: interblocage,
+        executionTime: time,
+    });
+}
 }
 
 function validerRsc() {
