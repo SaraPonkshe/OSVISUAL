@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banker’s Algorithm Simulation Game</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #1a1c1a;
+  padding: 20px;
+  color: #e1ebdf;
+}
+#container {
+  max-width: 950px;
+  margin: auto;
+  background:#423c3c;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+h2 { text-align: center; color: #007bff; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+th, td {
+  border: 1px solid #999;
+  padding: 8px;
+  text-align: center;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+button {
+  background: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background: #0056b3; }
+#result { margin-top: 15px; font-weight: bold; }
+#simulation {
+  margin-top: 20px;
+  padding: 10px;
+  border: 2px dashed #007bff;
+  border-radius: 6px;
+  display: none;
+}
+.sim-step {
+  margin: 5px 0;
+  padding: 8px;
+  background: #202420;
+  border-radius: 4px;
+}
+.highlight { background: #c7e3ff; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <h2>💻 Banker’s Algorithm – Safe Sequence Simulator</h2>
+  <div id="problemArea"></div>
+  <label>Enter safe sequence (comma-separated process indices, e.g. 0,2,1):</label>
+  <input type="text" id="answerInput" placeholder="e.g. 0,2,1">
+  <button id="submitBtn">Submit</button>
+  <p id="result"></p>
+  <button id="nextBtn">Next Problem</button>
+  <button id="watchBtn" style="display:none;">▶ Watch Correct Simulation</button>
+  <div id="simulation"></div>
+</div>
+
+<script>
+// ---------- Helper functions ----------
+function computeNeed(max, alloc) {
+  const n = max.length, m = max[0].length;
+  const need = [];
+  for (let i=0;i<n;i++){
+    need[i]=[];
+    for (let j=0;j<m;j++) need[i][j] = max[i][j] - alloc[i][j];
+  }
+  return need;
+}
+
+function findSafeSequence(alloc, need, avail) {
+  const n = alloc.length, m = avail.length;
+  const work = avail.slice();
+  const finish = Array(n).fill(false);
+  const seq = [];
+  const steps = [];
+
+  let found = true;
+  while (found) {
+    found = false;
+    for (let i=0;i<n;i++){
+      if (!finish[i]){
+        let canFinish = true;
+        for (let j=0;j<m;j++){
+          if (need[i][j] > work[j]) { canFinish=false; break; }
+        }
+        if (canFinish){
+          steps.push({
+            process: i,
+            before: work.slice(),
+            add: alloc[i].slice(),
+          });
+          for (let j=0;j<m;j++) work[j]+=alloc[i][j];
+          finish[i]=true; seq.push(i); found=true;
+        }
+      }
+    }
+  }
+  return { seq: seq.length===n ? seq : null, steps };
+}
+
+// ---------- 12 Exam-Style Problems ----------
+const problems = [
+  {
+    id:1, description:"System of 5 processes (P0–P4) and 3 resources (A,B,C).",
+    processes:["P0","P1","P2","P3","P4"], resources:["A","B","C"],
+    allocation:[[0,1,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],
+    max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]], available:[3,3,2]
+  },
+  {
+    id:2, description:"A system with 6 processes and 4 resources.",
+    processes:["P0","P1","P2","P3","P4","P5"], resources:["A","B","C","D"],
+    allocation:[[1,0,0,0],[1,2,2,0],[2,1,3,0],[1,4,1,0],[1,2,0,1],[1,4,3,1]],
+    max:[[3,2,1,4],[1,4,5,2],[4,2,4,5],[6,6,1,0],[2,3,1,3],[2,4,4,1]], available:[0,2,3,3]
+  },
+  {
+    id:3, description:"Four processes (P0–P3) and three resources (A,B,C).",
+    processes:["P0","P1","P2","P3"], resources:["A","B","C"],
+    allocation:[[0,1,0],[2,0,0],[3,0,3],[2,1,1]],
+    max:[[7,5,3],[3,2,2],[9,0,4],[4,2,2]], available:[1,1,2]
+  },
+  {
+    id:4, description:"Five processes competing for three resources.",
+    processes:["P0","P1","P2","P3","P4"], resources:["R1","R2","R3"],
+    allocation:[[0,0,1],[2,1,0],[3,0,2],[2,1,1],[0,0,2]],
+    max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]], available:[3,3,2]
+  },
+  {
+    id:5, description:"Three processes and three resources.",
+    processes:["P0","P1","P2"], resources:["A","B","C"],
+    allocation:[[0,1,0],[2,0,0],[3,0,3]],
+    max:[[7,5,3],[3,2,2],[9,0,4]], available:[2,3,2]
+  },
+  {
+    id:6, description:"Five processes with resource instances (A,B,C).",
+    processes:["P0","P1","P2","P3","P4"], resources:["A","B","C"],
+    allocation:[[0,0,1],[2,1,0],[3,1,1],[1,3,1],[0,0,2]],
+    max:[[6,4,3],[3,2,2],[9,1,2],[2,2,2],[4,3,3]], available:[3,3,2]
+  },
+  {
+    id:7, description:"System with 4 processes and 4 resources.",
+    processes:["P0","P1","P2","P3"], resources:["A","B","C","D"],
+    allocation:[[1,0,0,1],[2,1,1,0],[1,3,2,1],[0,0,1,2]],
+    max:[[3,2,1,2],[2,3,3,1],[4,3,3,3],[2,2,2,3]], available:[2,2,1,2]
+  },
+  {
+    id:8, description:"Four processes sharing 3 resource types.",
+    processes:["P0","P1","P2","P3"], resources:["R1","R2","R3"],
+    allocation:[[0,2,0],[2,0,0],[3,0,2],[2,1,1]],
+    max:[[6,4,3],[3,2,2],[9,0,2],[2,2,2]], available:[2,3,2]
+  },
+  {
+    id:9, description:"Three processes (P0–P2), 3 resources.",
+    processes:["P0","P1","P2"], resources:["A","B","C"],
+    allocation:[[0,1,0],[2,0,0],[3,0,3]],
+    max:[[7,5,3],[3,2,2],[9,0,4]], available:[2,3,2]
+  },
+  {
+    id:10, description:"Five processes (P0–P4) using 3 resource types.",
+    processes:["P0","P1","P2","P3","P4"], resources:["R1","R2","R3"],
+    allocation:[[0,1,0],[2,0,0],[3,0,2],[2,1,1],[0,0,2]],
+    max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2],[4,3,3]], available:[3,3,2]
+  },
+  {
+    id:11, description:"Five processes (P0–P4), 4 resource types.",
+    processes:["P0","P1","P2","P3","P4"], resources:["A","B","C","D"],
+    allocation:[[0,1,0,1],[2,0,0,0],[3,0,2,1],[2,1,1,0],[0,0,2,2]],
+    max:[[5,3,3,3],[3,2,2,2],[9,0,2,2],[2,2,2,1],[4,3,3,2]], available:[3,2,2,2]
+  },
+  {
+    id:12, description:"System with 4 processes (P0–P3) and 3 resources (A,B,C).",
+    processes:["P0","P1","P2","P3"], resources:["A","B","C"],
+    allocation:[[0,1,0],[2,0,0],[3,0,2],[2,1,1]],
+    max:[[7,5,3],[3,2,2],[9,0,2],[2,2,2]], available:[3,3,2]
+  }
+];
+
+// ---------- Render UI ----------
+function renderTable(title, matrix, labels) {
+  let html = `<h3>${title}</h3><table><tr><th>Proc</th>`;
+  for (let j=0;j<labels.length;j++) html += `<th>${labels[j]}</th>`;
+  html += "</tr>";
+  for (let i=0;i<matrix.length;i++){
+    html += `<tr><td>P${i}</td>${matrix[i].map(v=>`<td>${v}</td>`).join("")}</tr>`;
+  }
+  html += "</table>";
+  return html;
+}
+
+let index = 0;
+let currentSteps = [];
+
+function renderProblem(prob){
+  document.getElementById("simulation").style.display="none";
+  const area=document.getElementById("problemArea");
+  const need = computeNeed(prob.max, prob.allocation);
+  const { seq, steps } = findSafeSequence(prob.allocation, need, prob.available);
+  area.dataset.correct = seq ? seq.join(",") : "unsafe";
+  currentSteps = steps;
+  area.innerHTML = `<p><strong>Problem ${prob.id}:</strong> ${prob.description}</p>` +
+    renderTable("Allocation", prob.allocation, prob.resources) +
+    renderTable("Max", prob.max, prob.resources) +
+    renderTable("Need", need, prob.resources) +
+    `<h3>Available Resources</h3><table><tr>${prob.resources.map(r=>`<th>${r}</th>`).join("")}</tr><tr>${prob.available.map(v=>`<td>${v}</td>`).join("")}</tr></table>`;
+}
+
+// ---------- Handlers ----------
+document.getElementById("submitBtn").onclick=()=>{
+  const user=document.getElementById("answerInput").value.trim();
+  const correct=document.getElementById("problemArea").dataset.correct;
+  const res=document.getElementById("result");
+  const watchBtn=document.getElementById("watchBtn");
+  watchBtn.style.display="none";
+
+  if(correct==="unsafe"){
+    if(user.toLowerCase()==="unsafe"){
+      res.style.color="green"; res.textContent="✅ Correct! System is unsafe.";
+    } else {
+      res.style.color="red"; res.textContent="❌ Wrong. The correct answer: Unsafe.";
+    }
+  } else {
+    if(user===correct){
+      res.style.color="green"; res.textContent="✅ Correct safe sequence!";
+    } else {
+      res.style.color="red"; res.textContent=`❌ Wrong. Correct sequence: ${correct}`;
+      watchBtn.style.display="inline-block";
+    }
+  }
+};
+
+document.getElementById("nextBtn").onclick=()=>{
+  index=(index+1)%problems.length;
+  document.getElementById("answerInput").value="";
+  document.getElementById("result").textContent="";
+  document.getElementById("watchBtn").style.display="none";
+  document.getElementById("simulation").style.display="none";
+  renderProblem(problems[index]);
+};
+
+// ---------- Simulation animation ----------
+document.getElementById("watchBtn").onclick=()=>{
+  const simDiv=document.getElementById("simulation");
+  simDiv.innerHTML="<h3>🔍 Simulation: How Safe Sequence Was Found</h3>";
+  simDiv.style.display="block";
+  let step=0;
+  function showStep(){
+    if(step>=currentSteps.length){
+      simDiv.innerHTML += `<div class="sim-step highlight">✅ All processes finished safely! Safe sequence complete.</div>`;
+      return;
+    }
+    const s=currentSteps[step];
+    simDiv.innerHTML += `
+      <div class="sim-step">
+        <strong>Step ${step+1}:</strong> Process <b>P${s.process}</b> runs.<br>
+        Work before: [${s.before.join(", ")}], Allocation released: [${s.add.join(", ")}] → New Work: [${s.before.map((v,i)=>v+s.add[i]).join(", ")}]
+      </div>`;
+    step++;
+    setTimeout(showStep, 1500);
+  }
+  showStep();
+};
+
+// ---------- Start ----------
+renderProblem(problems[index]);
+</script>
+</body>
+</html>

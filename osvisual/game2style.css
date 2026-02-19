@@ -1,0 +1,103 @@
+body {
+  background: #0b132b;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  color: #fca311;
+}
+
+.controls {
+  margin: 20px 0;
+}
+
+select, button {
+  padding: 8px 12px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+}
+
+button {
+  background: #fca311;
+  cursor: pointer;
+}
+
+.info {
+  background: #14213d;
+  border-radius: 10px;
+  padding: 10px;
+  width: 60%;
+  margin: 10px auto;
+  border: 2px solid #fca311;
+  text-align: left;
+}
+
+.track {
+  width: 90%;
+  height: 200px;
+  background: #14213d;
+  margin: 20px auto;
+  border-radius: 15px;
+  border: 3px dashed #fca311;
+  position: relative;
+  overflow: hidden;
+}
+
+.car {
+  width: 80px;
+  height: 40px;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 40px;
+  color: white;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+#p1 { background: #e63946; top: 30px; }
+#p2 { background: #2a9d8f; top: 90px; }
+#p3 { background: #457b9d; top: 150px; }
+
+/* Gantt Chart */
+.gantt-container {
+  width: 90%;
+  background: #14213d;
+  margin: 20px auto;
+  border-radius: 10px;
+  border: 2px solid #fca311;
+  padding: 10px;
+  position: relative;
+}
+
+#gantt {
+  display: flex;
+  height: 40px;
+  width: 100%;
+  position: relative;
+}
+
+.gantt-bar {
+  height: 100%;
+  text-align: center;
+  line-height: 40px;
+  color: #fff;
+  font-weight: bold;
+  animation: grow linear forwards;
+}
+
+@keyframes grow {
+  from { width: 0; }
+  to { width: var(--width); }
+}
+
+/* Animation for cars */
+@keyframes race {
+  from { left: 0; }
+  to { left: calc(100% - 100px); }
+}

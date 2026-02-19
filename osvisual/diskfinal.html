@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Disk Scheduling Mini Game - Dark Mode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #19232c;
+            color: #e0e4eb;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 2em;
+            background: #242f3d;
+            border-radius: 12px;
+            box-shadow: 0 0 18px #1f2633;
+        }
+        h1 {
+            text-align: center;
+            color: #45a9ea;
+        }
+        label {
+            display: block;
+            margin-top: 1em;
+            color: #e0e4eb;
+        }
+        select,
+        button,
+        input[type="number"] {
+            width: 100%;
+            padding: 0.6em;
+            margin-top: 0.3em;
+            border-radius: 8px;
+            border: none;
+            background: #263244;
+            color: #e0e4eb;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        select:focus,
+        input:focus {
+            outline: 2px solid #45a9ea;
+        }
+        button {
+            background: #45a9ea;
+            color: #19232c;
+            margin-top: 1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 6px #181e26;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2d82b7;
+            color: #f6f8fa;
+        }
+        .result {
+            margin-top: 1em;
+            font-size: 1.15em;
+            text-align: center;
+        }
+        .requests {
+            font-size: 1.1em;
+            margin-top: 2em;
+        }
+        .headpos {
+            color: #a1b5d8;
+        }
+        .direction {
+            color: #f7b731;
+            font-weight: bold;
+        }
+        #simContainer {
+            display: none;
+            margin-top: 2em;
+            text-align: center;
+        }
+        #simChart {
+            background: #223047;
+            border-radius: 8px;
+        }
+        #correctMovement {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #f7b731;
+            font-size: 1.1em;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Disk Scheduling Game</h1>
+        <div class="requests"></div>
+        <div class="direction"></div>
+        <label>
+            Choose Algorithm:
+            <select id="algorithm">
+                <option>FCFS</option>
+                <option>SSTF</option>
+                <option>SCAN</option>
+                <option>CSCAN</option>
+                <option>LOOK</option>
+                <option>CLOOK</option>
+            </select>
+        </label>
+        <label>
+            Enter Total Head Movement:
+            <input type="number" id="answer" min="0" required />
+        </label>
+        <button id="submitBtn">Submit Answer</button>
+        <div class="result" id="result"></div>
+        <button id="newBtn" style="margin-top: 1em;">New Question</button>
+        <div id="simContainer">
+            <button id="simBtn">Watch Correct Simulation</button>
+            <canvas id="simChart" width="400" height="260"></canvas>
+            <div id="correctMovement"></div>
+        </div>
+    </div>
+
+    <script>
+        let requests, head, diskSize, direction;
+
+        function generateDirection(algorithm) {
+            if (
+                ["SCAN", "CSCAN", "LOOK", "CLOOK"].includes(algorithm)
+            ) {
+                return Math.random() < 0.5 ? "left" : "right";
+            }
+            return null;
+        }
+
+        function generateQuestion() {
+            diskSize = 199;
+            let n = Math.floor(Math.random() * 5) + 5;
+            let reqsSet = new Set();
+            while (reqsSet.size < n) {
+                let val = Math.floor(Math.random() * (diskSize + 1));
+                reqsSet.add(val);
+            }
+            requests = Array.from(reqsSet);
+            head = Math.floor(Math.random() * (diskSize + 1));
+
+            const alg = document.getElementById("algorithm").value;
+            direction = generateDirection(alg);
+
+            if (["SCAN", "CSCAN"].includes(alg)) {
+                if (direction === "left" && !requests.includes(0)) {
+                    requests.push(0);
+                }
+                if (direction === "right" && !requests.includes(diskSize)) {
+                    requests.push(diskSize);
+                }
+            }
+
+            document.querySelector(
+                ".requests"
+            ).innerHTML = `<b>Requests:</b> [${requests.join(", ")}] <br>
+             <span class="headpos"><b>Head Position:</b> ${head}</span>`;
+
+            document.querySelector(
+                ".direction"
+            ).innerHTML = direction
+                ? `<span>Direction: <span class="direction">${direction.toUpperCase()}</span></span>`
+                : "";
+
+            document.getElementById("result").textContent = "";
+            document.getElementById("answer").value = "";
+            document.getElementById("simContainer").style.display = "none";
+            document.getElementById("correctMovement").textContent = "";
+        }
+
+        document
+            .getElementById("algorithm")
+            .addEventListener("change", generateQuestion);
+
+        // Algorithm functions 
+
+        function FCFS(arr, head) {
+            let movement = 0;
+            let pos = head;
+            let order = arr.slice();
+            order.sort((a, b) => arr.indexOf(a) - arr.indexOf(b));
+            let seq = [head];
+            for (let req of order) {
+                movement += Math.abs(pos - req);
+                pos = req;
+                seq.push(pos);
+            }
+            return { movement, seq };
+        }
+        function SSTF(arr, head) {
+            let movement = 0;
+            let reqs = [...arr];
+            let pos = head;
+            let seq = [head];
+            let visited = new Array(reqs.length).fill(false);
+            for (let c = 0; c < reqs.length; c++) {
+                let idx = -1;
+                let minDist = Infinity;
+                for (let i = 0; i < reqs.length; i++) {
+                    if (
+                        !visited[i] &&
+                        Math.abs(pos - reqs[i]) < minDist
+                    ) {
+                        minDist = Math.abs(pos - reqs[i]);
+                        idx = i;
+                    }
+                }
+                movement += minDist;
+                pos = reqs[idx];
+                visited[idx] = true;
+                seq.push(pos);
+            }
+            return { movement, seq };
+        }
+        function SCAN(arr, head, dir) {
+            let reqs = arr.slice();
+            let movement = 0;
+            let left = reqs
+                .filter((x) => x < head)
+                .sort((a, b) => b - a);
+            let right = reqs
+                .filter((x) => x >= head)
+                .sort((a, b) => a - b);
+            let pos = head;
+            let seq = [head];
+            if (dir === "left") {
+                for (let i = 0; i < left.length; i++) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+                if (pos !== 0) {
+                    movement += Math.abs(pos - 0);
+                    pos = 0;
+                    seq.push(pos);
+                }
+                for (let i = 0; i < right.length; i++) {
+                    if (right[i] !== head) {
+                        movement += Math.abs(pos - right[i]);
+                        pos = right[i];
+                        seq.push(pos);
+                    }
+                }
+            } else {
+                for (let i = 0; i < right.length; i++) {
+                    movement += Math.abs(pos - right[i]);
+                    pos = right[i];
+                    seq.push(pos);
+                }
+                if (pos !== diskSize) {
+                    movement += Math.abs(pos - diskSize);
+                    pos = diskSize;
+                    seq.push(pos);
+                }
+                for (let i = left.length - 1; i >= 0; i--) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+            }
+            return { movement, seq };
+        }
+        function CSCAN(arr, head, dir) {
+            let reqs = arr.slice();
+            let movement = 0;
+            let left = reqs.filter((x) => x < head).sort((a, b) => a - b);
+            let right = reqs
+                .filter((x) => x >= head)
+                .sort((a, b) => a - b);
+            let pos = head;
+            let seq = [head];
+            if (dir === "left") {
+                for (let i = left.length - 1; i >= 0; i--) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+                if (pos !== 0) {
+                    movement += Math.abs(pos - 0);
+                    pos = 0;
+                    seq.push(pos);
+                }
+                movement += Math.abs(pos - diskSize);
+                pos = diskSize;
+                seq.push(pos);
+                for (let i = right.length - 1; i >= 0; i--) {
+                    movement += Math.abs(pos - right[i]);
+                    pos = right[i];
+                    seq.push(pos);
+                }
+            } else {
+                for (let i = 0; i < right.length; i++) {
+                    movement += Math.abs(pos - right[i]);
+                    pos = right[i];
+                    seq.push(pos);
+                }
+                if (pos !== diskSize) {
+                    movement += Math.abs(pos - diskSize);
+                    pos = diskSize;
+                    seq.push(pos);
+                }
+                movement += Math.abs(pos - 0);
+                pos = 0;
+                seq.push(pos);
+                for (let i = 0; i < left.length; i++) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+            }
+            return { movement, seq };
+        }
+        function LOOK(arr, head, dir) {
+            let reqs = arr.slice();
+            let movement = 0;
+            let left = reqs
+                .filter((x) => x < head)
+                .sort((a, b) => b - a);
+            let right = reqs
+                .filter((x) => x >= head)
+                .sort((a, b) => a - b);
+            let pos = head;
+            let seq = [head];
+            if (dir === "left") {
+                for (let i = 0; i < left.length; i++) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+                for (let i = 0; i < right.length; i++) {
+                    if (right[i] !== head) {
+                        movement += Math.abs(pos - right[i]);
+                        pos = right[i];
+                        seq.push(pos);
+                    }
+                }
+            } else {
+                for (let i = 0; i < right.length; i++) {
+                    movement += Math.abs(pos - right[i]);
+                    pos = right[i];
+                    seq.push(pos);
+                }
+                for (let i = left.length - 1; i >= 0; i--) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+            }
+            return { movement, seq };
+        }
+        function CLOOK(arr, head, dir) {
+            let reqs = arr.slice();
+            let movement = 0;
+            let left = reqs.filter((x) => x < head).sort((a, b) => a - b);
+            let right = reqs
+                .filter((x) => x >= head)
+                .sort((a, b) => a - b);
+            let pos = head;
+            let seq = [head];
+            if (dir === "left") {
+                for (let i = left.length - 1; i >= 0; i--) {
+                    movement += Math.abs(pos - left[i]);
+                    pos = left[i];
+                    seq.push(pos);
+                }
+                if (right.length > 0) {
+                    movement += Math.abs(
+                        pos - right[right.length - 1]
+                    );
+                    pos = right[right.length - 1];
+                    seq.push(pos);
+                    for (let i = right.length - 2; i >= 0; i--) {
+                        movement += Math.abs(pos - right[i]);
+                        pos = right[i];
+                        seq.push(pos);
+                    }
+                }
+            } else {
+                for (let i = 0; i < right.length; i++) {
+                    movement += Math.abs(pos - right[i]);
+                    pos = right[i];
+                    seq.push(pos);
+                }
+                if (left.length > 0) {
+                    movement += Math.abs(pos - left[0]);
+                    pos = left[0];
+                    seq.push(pos);
+                    for (let i = 1; i < left.length; i++) {
+                        movement += Math.abs(pos - left[i]);
+                        pos = left[i];
+                        seq.push(pos);
+                    }
+                }
+            }
+            return { movement, seq };
+        }
+
+        function getCorrectAnswer(alg, arr, head, dir) {
+            switch (alg) {
+                case "FCFS":
+                    return FCFS(arr, head);
+                case "SSTF":
+                    return SSTF(arr, head);
+                case "SCAN":
+                    return SCAN(arr, head, dir);
+                case "CSCAN":
+                    return CSCAN(arr, head, dir);
+                case "LOOK":
+                    return LOOK(arr, head, dir);
+                case "CLOOK":
+                    return CLOOK(arr, head, dir);
+            }
+        }
+
+        document
+            .getElementById("submitBtn")
+            .addEventListener("click", function () {
+                const alg = document.getElementById("algorithm").value;
+                const userAns = parseInt(
+                    document.getElementById("answer").value,
+                    10
+                );
+                const res = getCorrectAnswer(
+                    alg,
+                    requests,
+                    head,
+                    direction
+                );
+                const correctAns = res.movement;
+                const resultDiv = document.getElementById("result");
+                document.getElementById("simContainer").style.display = "none";
+                document.getElementById("correctMovement").textContent = "";
+                if (!isNaN(userAns)) {
+                    if (userAns === correctAns) {
+                        resultDiv.textContent = "CORRECT ANSWER";
+                        resultDiv.style.color = "#28a745";
+                    } else {
+                        resultDiv.textContent = "WRONG ANSWER";
+                        resultDiv.style.color = "#d22";
+                        document.getElementById("simContainer").style.display =
+                            "block";
+                    }
+                } else {
+                    resultDiv.textContent = "Please enter a number";
+                    resultDiv.style.color = "#ff9800";
+                }
+            });
+
+        document
+            .getElementById("simBtn")
+            .addEventListener("click", function () {
+                const alg = document.getElementById("algorithm").value;
+                const res = getCorrectAnswer(
+                    alg,
+                    requests,
+                    head,
+                    direction
+                );
+                let data = res.seq;
+                let labels = Array.from(
+                    { length: data.length },
+                    (_, i) => "Move " + i
+                );
+                let ctx = document
+                    .getElementById("simChart")
+                    .getContext("2d");
+                if (window.simChartObj) window.simChartObj.destroy();
+
+                let animationProgress = 1;
+                window.simChartObj = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Disk Head Position",
+                                data: [],
+                                borderColor: "#2774ae",
+                                fill: false,
+                                tension: 0,
+                                pointBackgroundColor: "#2774ae",
+                            },
+                        ],
+                    },
+                    options: {
+                        animation: false,
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: "Cylinder Number",
+                                },
+                                min: 0,
+                                max: 200,
+                            },
+                        },
+                    },
+                });
+
+                function animateChart() {
+                    if (animationProgress <= data.length) {
+                        window.simChartObj.data.datasets[0].data = data.slice(
+                            0,
+                            animationProgress
+                        );
+                        window.simChartObj.update();
+                        animationProgress++;
+                        setTimeout(animateChart, 600);
+                    } else {
+                        document.getElementById(
+                            "correctMovement"
+                        ).textContent =
+                            "Correct Total Head Movement: " + res.movement;
+                    }
+                }
+                animateChart();
+            });
+
+        document.getElementById("newBtn").addEventListener("click", generateQuestion);
+
+        window.onload = generateQuestion;
+    </script>
+</body>
+</html>

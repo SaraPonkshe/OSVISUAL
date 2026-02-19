@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Replacement Game</title>
+<style>
+  body {font-family: "Poppins", sans-serif; background: radial-gradient(circle at top, #0b0b0b, #000); color: #eee; text-align: center; padding: 20px;}
+  h1 {color: #00d4ff; text-shadow: 0 0 8px #00d4ff; margin-bottom: 20px;}
+  .input-box {background: rgba(25,25,25,0.9); padding: 20px; border-radius: 12px; display: inline-block; border: 1px solid #00d4ff44; box-shadow: 0 0 15px rgba(0,212,255,0.2); margin-bottom: 25px;}
+  select, input, button {margin: 6px; padding: 8px; border-radius: 6px; border: 1px solid #00d4ff55; background: #111; color: white;}
+  button {cursor: pointer; background: linear-gradient(90deg,#00d4ff,#00ffaa); color: #000; font-weight: bold; transition: 0.3s;}
+  button:hover {transform: scale(1.05); box-shadow: 0 0 10px #00ffaa77;}
+  table {border-collapse: collapse; margin: 0 auto; background-color: #1b1b1b; border-radius: 8px; overflow: hidden; box-shadow: 0 0 15px rgba(0,212,255,0.15);}
+  th, td {border: 1px solid #444; padding: 10px; text-align: center; width: 55px; font-size: 15px; color: #eee;}
+  th {background-color: #111; color: #00d4ff;}
+  td.clickable:hover {background: #333; cursor: pointer; box-shadow: inset 0 0 6px #00ffaa;}
+  .correct {background-color: #145a32 !important; color: #00ff7f !important; animation: flashGreen 0.5s ease;}
+  .wrong {background-color: #5a1a1a !important; color: #ff6b6b !important; animation: flashRed 0.5s ease;}
+  @keyframes flashGreen {from { transform: scale(1.1); opacity: 0.8; } to { transform: scale(1); opacity: 1; }}
+  @keyframes flashRed {from { transform: scale(1.1); opacity: 0.8; } to { transform: scale(1); opacity: 1; }}
+  #feedback {font-size: 18px; font-weight: bold; margin-top: 15px;}
+  #feedback.correct {color: #00ffaa;text-shadow: 0 0 6px #00ffaa;}
+  #feedback.wrong {color: #ff6b6b;text-shadow: 0 0 6px #ff6b6b;}
+  #finalMsg {font-size: 20px; color: #00ffaa; font-weight: bold; margin-top: 20px; text-shadow: 0 0 8px #00ffaa;}
+  #replayBtn {display: none; margin-top: 15px;}
+</style>
+</head>
+<body>
+
+<h1>PAGE REPLACEMENT ALGORITHMS</h1>
+
+<div class="input-box">
+  <label><b>Algorithm:</b></label>
+  <select id="algorithm">
+    <option value="FIFO">FIFO</option>
+    <option value="LRU">LRU</option>
+    <option value="Optimal">Optimal</option>
+  </select>
+  <br>
+  <label><b>Frames:</b></label>
+  <input type="number" id="frames" value="3" min="2" max="6">
+  <br>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<div id="gameArea"></div>
+<p id="feedback"></p>
+<p id="finalMsg"></p>
+<button id="replayBtn" onclick="replaySimulation()">▶ Watch Correct Simulation</button>
+
+<script>
+let pages = [];
+let frames = [];
+let recentUse = {};
+let numFrames;
+let algorithm;
+let pageFaults = 0;
+let frameRows = [];
+let table;
+let simulationSteps = [];
+let studentAnswer = [];
+let fifoPointer = 0; // For FIFO
+
+function randomPages() {
+  let arr = [];
+  for (let i = 0; i < 10; i++) arr.push(Math.floor(Math.random() * 8));
+  return arr;
+}
+
+function startGame() {
+  algorithm = document.getElementById("algorithm").value;
+  numFrames = parseInt(document.getElementById("frames").value);
+  pages = randomPages();
+  frames = Array(numFrames).fill(null);
+  recentUse = {};
+  pageFaults = 0;
+  simulationSteps = [];
+  studentAnswer = Array(numFrames).fill(null).map(() => Array(pages.length).fill(null));
+  fifoPointer = 0;
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("finalMsg").textContent = "";
+  document.getElementById("replayBtn").style.display = "none";
+  generateTable();
+  precomputeCorrectSteps();
+}
+
+function generateTable() {
+  const gameArea = document.getElementById("gameArea");
+  gameArea.innerHTML = "";
+  const title = document.createElement("h3");
+  title.textContent = "Reference String: " + pages.join(", ");
+  gameArea.appendChild(title);
+
+  table = document.createElement("table");
+  const header = document.createElement("tr");
+  const th = document.createElement("th");
+  th.textContent = "Frame ↓ / Step →";
+  header.appendChild(th);
+
+  for (let page of pages) {
+    const th2 = document.createElement("th");
+    th2.textContent = page;
+    header.appendChild(th2);
+  }
+  table.appendChild(header);
+
+  frameRows = [];
+  for (let i = 0; i < numFrames; i++) {
+    const row = document.createElement("tr");
+    const frameLabel = document.createElement("th");
+    frameLabel.textContent = "Frame " + (i + 1);
+    row.appendChild(frameLabel);
+
+    for (let j = 0; j < pages.length; j++) {
+      const td = document.createElement("td");
+      td.classList.add("clickable");
+      td.onclick = () => fillStudentCell(i, j);
+      row.appendChild(td);
+    }
+    frameRows.push(row);
+    table.appendChild(row);
+  }
+  gameArea.appendChild(table);
+
+  const checkBtn = document.createElement("button");
+  checkBtn.textContent = "✅ Check Answer";
+  checkBtn.onclick = checkStudentAnswer;
+  gameArea.appendChild(checkBtn);
+}
+
+function fillStudentCell(i, j) {
+  let val = prompt(`Enter the page number for Frame ${i+1}, Step ${j+1}`);
+  if (val === null) return;
+  if (val.trim() === "") val = "-";
+  studentAnswer[i][j] = val;
+  frameRows[i].children[j+1].textContent = val;
+}
+
+// Corrected Optimal with FIFO fallback
+function precomputeCorrectSteps() {
+  let simFrames = Array(numFrames).fill(null);
+  let useMap = {};
+  pageFaults = 0;
+  simulationSteps = [];
+  fifoPointer = 0;
+  let fifoQueue = []; // For FIFO order
+  for (let step = 0; step < pages.length; step++) {
+    let page = pages[step];
+    if (!simFrames.includes(page)) {
+      // Page fault
+      if (algorithm === "FIFO") {
+        let emptyIndex = simFrames.indexOf(null);
+        if (emptyIndex !== -1) {
+          simFrames[emptyIndex] = page;
+          fifoQueue.push(page);
+        } else {
+          let outPage = fifoQueue.shift();
+          let outIndex = simFrames.indexOf(outPage);
+          simFrames[outIndex] = page;
+          fifoQueue.push(page);
+        }
+      } else if (algorithm === "LRU") {
+        let least = Infinity;
+        let victim = -1;
+        for (let i = 0; i < numFrames; i++) {
+          let lastUsed = useMap[simFrames[i]] ?? -1;
+          if (lastUsed < least) {
+            least = lastUsed;
+            victim = i;
+          }
+        }
+        simFrames[victim] = page;
+      } else if (algorithm === "Optimal") {
+        let emptyIndex = simFrames.indexOf(null);
+        if (emptyIndex !== -1) {
+          simFrames[emptyIndex] = page;
+          fifoQueue.push(page);
+        } else {
+          // Step 1: find which frames are not used again
+          let neverUsedIndexes = [];
+          let farthest = -1, victim = -1;
+          for (let i = 0; i < numFrames; i++) {
+            let nextUseIndex = pages.slice(step + 1).indexOf(simFrames[i]);
+            if (nextUseIndex === -1) {
+              neverUsedIndexes.push(i);
+            }
+            if (nextUseIndex > farthest) {
+              farthest = nextUseIndex;
+              victim = i;
+            }
+          }
+          if (neverUsedIndexes.length === 1) {
+            // One page is never used again: evict it
+            victim = neverUsedIndexes[0];
+          } else if (neverUsedIndexes.length > 1) {
+            // Multiple candidates: FIFO fallback
+            // Find which among neverUsedIndexes was loaded earliest
+            let candidates = neverUsedIndexes.map(idx => simFrames[idx]);
+            for (let outPage of fifoQueue) {
+              let candidateIdx = candidates.indexOf(outPage);
+              if (candidateIdx !== -1) {
+                victim = neverUsedIndexes[candidateIdx];
+                break;
+              }
+            }
+          }
+          // Replace victim
+          let oldPage = simFrames[victim];
+          simFrames[victim] = page;
+          // Update FIFO order (remove replaced page, add new)
+          const fifoIdx = fifoQueue.indexOf(oldPage);
+          if (fifoIdx !== -1) fifoQueue.splice(fifoIdx, 1);
+          fifoQueue.push(page);
+        }
+      }
+      pageFaults++;
+    }
+    useMap[page] = step;
+    simulationSteps.push({ frames: [...simFrames] });
+  }
+}
+
+function checkStudentAnswer() {
+  let correct = true;
+  for (let i = 0; i < numFrames; i++) {
+    for (let j = 0; j < pages.length; j++) {
+      let studentVal = studentAnswer[i][j];
+      let correctVal = simulationSteps[j].frames[i];
+      let studentNorm = (studentVal === null || studentVal === undefined || studentVal.trim() === "" || studentVal === "-") ? "-" : studentVal;
+      let correctNorm = (correctVal === null || correctVal === undefined) ? "-" : String(correctVal);
+      if (studentNorm !== correctNorm) {
+        frameRows[i].children[j + 1].classList.add("wrong");
+        correct = false;
+      } else {
+        frameRows[i].children[j + 1].classList.add("correct");
+      }
+    }
+  }
+  if (correct) {
+    document.getElementById("feedback").textContent = "🎉 Correct Answer!";
+    document.getElementById("feedback").className = "correct";
+  } else {
+    document.getElementById("feedback").textContent = "❌ Wrong Answer — watch correct simulation 👇";
+    document.getElementById("feedback").className = "wrong";
+    document.getElementById("replayBtn").style.display = "inline-block";
+  }
+  document.getElementById("finalMsg").textContent =
+    `Algorithm: ${algorithm}, Total Faults (Correct): ${pageFaults}`;
+}
+
+async function replaySimulation() {
+  for (let i = 0; i < numFrames; i++) {
+    for (let j = 0; j < pages.length; j++) {
+      frameRows[i].children[j+1].textContent = "-";
+      frameRows[i].children[j+1].classList.remove("correct","wrong");
+    }
+  }
+  document.getElementById("feedback").textContent = "▶ Replaying correct answer...";
+  for (let step = 0; step < simulationSteps.length; step++) {
+    const state = simulationSteps[step].frames;
+    for (let i = 0; i < numFrames; i++) {
+      const cell = frameRows[i].children[step + 1];
+      cell.textContent = state[i] ?? "-";
+      if (i === state.indexOf(pages[step])) cell.classList.add("correct");
+    }
+    await new Promise(res => setTimeout(res, 700));
+  }
+  document.getElementById("feedback").textContent = "🎬 Correct Simulation Complete!";
+}
+</script>
+</body>
+</html>
