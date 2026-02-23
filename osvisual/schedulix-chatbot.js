@@ -6,7 +6,7 @@
   let messages = []; // { role: "user"|"assistant", content: string }
   let isLoading = false;
 
-  const GROQ_API_KEY = "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";
+  const GROQ_API_KEY = "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";
 
   const SUGGESTIONS = [
     "Which process waited the longest?",
@@ -59,10 +59,13 @@ Average Turnaround Time: ${ctx.averageTurnaround ?? "N/A"}
 Rules:
 - Answer questions about THIS specific simulation using the data above.
 - When explaining scheduling order, reference actual arrival/burst/priority values.
+- TIEBREAKER RULE: When two processes have equal priority/arrival/burst time, the process with the lower Process ID runs first (P1 before P2, P2 before P3, etc.).
 - Be concise (under 120 words) unless the user asks for more detail.
 - Use plain text, no markdown headers or bullet symbols — write naturally.
-- If asked about a different algorithm, reason about what WOULD happen with the same processes.`;
-  }
+- If asked about a different algorithm, reason about what WOULD happen with the same processes.
+- Never say "please run a simulation first" — the simulation data is always provided above.
+- TIEBREAKER RULE: When two or more processes have equal arrival time, burst time, or priority, the process with the lower Process ID always runs first (P1 before P2, etc.). Processes NEVER execute simultaneously — only one runs at a time. The others simply wait.
+- TIEBREAKER RULE: When two or more processes have equal arrival time, burst time, or priority, the process with the lower Process ID ALWAYS runs first. This is the PRIMARY reason — for example if P1 and P2 arrive at the same time with the same burst time, P1 runs first purely because its ID (1) is lower than P2's ID (2). Always mention Process ID as the reason in such cases, never say "the Gantt chart predetermined it".`;}
 
   // ── Render a bubble (NO push to messages[]) ────────────────
   function renderBubble(role, text) {
@@ -453,6 +456,7 @@ Rules:
   // ── Public API ─────────────────────────────────────────────
   window.SchedulixChat = {
     updateContext: function (ctx) {
+       window._sxcContext = ctx; // ← add this for debugging
       schedulerContext = ctx;
       messages = []; // Reset conversation when new simulation runs
 
