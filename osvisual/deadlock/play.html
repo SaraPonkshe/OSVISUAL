@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play - Banker's Algorithm</title>
+  <link rel="stylesheet" href="style.css" />
+<style>
+    .matrix-table { margin: 10px auto; border-collapse: collapse; }
+    .matrix-table th, .matrix-table td { border: 1px solid #444; padding: 5px 10px; text-align: center; }
+    .process-btn { margin: 5px; padding: 8px 12px; cursor: pointer; border: 1px solid #00d4ff; background: #222; color: #fff; }
+    .process-btn.selected { background: #00ffaa; color: #000; }
+    #sequenceBox { margin-top: 15px; padding: 10px; border: 1px dashed #777; min-height: 40px; display: flex; gap: 10px; align-items: center; justify-content: center;}
+    .seq-item { background: #ffaa00; color: #000; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+    
+    /* Modern Leaderboard Styling */
+    #finalBox {
+      background: rgba(17, 24, 39, 0.7) !important;
+      backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    #finalBox h3 {
+      color: #a5b4fc;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    
+    #finalBox table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    #finalBox th {
+      text-align: left;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.5);
+      color: #818cf8;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    #finalBox td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 14px;
+    }
+    
+    #finalBox tbody tr:hover {
+      background: rgba(99, 102, 241, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<h1>Banker's Algorithm Game</h1>
+
+<div id="waitingBox" class="card">
+  <h3>Waiting Room</h3>
+  <p id="status" class="small"></p>
+  <p class="small">Wait until host starts…</p>
+  
+  <div style="margin-top:15px;">
+    <h4>Players in Lobby:</h4>
+    <div id="lobbyPlayersList" class="row"></div>
+  </div>
+</div>
+
+  <div id="gameBox" style="display:none; text-align: center;">
+  <div class="input-box">
+    <span class="badge">Question: <span id="qNum">1</span>/10</span><br/><br/>
+    <p>Find a valid Safe Sequence to avoid Deadlock!</p>
+  </div>
+
+  <div class="card" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+    <div>
+      <h4>Allocation</h4>
+      <table class="matrix-table" id="allocationTable"></table>
+    </div>
+    <div>
+      <h4>Max</h4>
+      <table class="matrix-table" id="maxTable"></table>
+    </div>
+    <div>
+      <h4>Available</h4>
+      <table class="matrix-table" id="availableTable"></table>
+    </div>
+  </div>
+
+  <div id="processSelector" class="row" style="margin-top: 20px; justify-content: center;"></div>
+
+  <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+    <label style="display: block; margin-bottom: 10px; color: #cbd5f5; font-weight: 500;">Enter Safe Sequence (e.g., P0,P1,P2):</label>
+    <input id="sequenceInput" type="text" placeholder="P0,P1,P2,P3" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #334155; background: #020617; color: white; font-size: 14px;">
+  </div>
+
+  <div class="row" style="margin-top: 10px;">
+    <button id="clearBtn" style="background: #aa0000;">Clear Sequence</button>
+  </div>
+
+  <div class="row" style="margin-top: 20px;">
+    <button id="submitBtn">Submit Sequence</button>
+  </div>
+
+  <div id="finalBox" class="card" style="display:none; margin-top:12px;">
+    <h3>Realtime Leaderboard</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Score</th><th>Accuracy</th><th>Total Time</th><th>Answered</th>
+        </tr>
+      </thead>
+      <tbody id="lbBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+  import { initPlayPage } from "./mpPlayer.js";
+  initPlayPage();
+</script>
+
+</body>
+</html>

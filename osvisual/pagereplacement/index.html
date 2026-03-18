@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<title>Page Replacement Multiplayer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter, sans-serif;
+}
+
+body{
+min-height:100vh;
+background: radial-gradient(circle at 20% 20%, #1e293b, transparent 40%),
+            radial-gradient(circle at 80% 30%, #4338ca, transparent 40%),
+            radial-gradient(circle at 50% 80%, #065f46, transparent 40%),
+            #020617;
+color:#e5e7eb;
+display:flex;
+flex-direction:column;
+}
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px 40px;
+border-bottom:1px solid rgba(255,255,255,0.05);
+backdrop-filter:blur(8px);
+}
+
+.logo{
+font-weight:600;
+font-size:18px;
+color:#a5b4fc;
+}
+
+.nav-right{
+font-size:14px;
+color:#94a3b8;
+}
+
+.hero{
+flex:1;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:40px 20px;
+}
+
+.card{
+background:rgba(17,24,39,0.6);
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,0.06);
+border-radius:18px;
+padding:60px 50px;
+max-width:700px;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+.title{
+font-size:52px;
+font-weight:600;
+margin-bottom:20px;
+background:linear-gradient(90deg,#818cf8,#22c55e,#06b6d4);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.desc{
+color:#94a3b8;
+font-size:16px;
+max-width:550px;
+margin:auto;
+line-height:1.6;
+}
+
+.buttons{
+margin-top:40px;
+display:flex;
+gap:16px;
+justify-content:center;
+flex-wrap:wrap;
+}
+
+button{
+border:none;
+padding:14px 28px;
+border-radius:10px;
+font-size:15px;
+font-weight:500;
+cursor:pointer;
+transition:all 0.25s ease;
+}
+
+.primary{
+background:linear-gradient(135deg,#6366f1,#22c55e);
+color:white;
+}
+
+.primary:hover{
+transform:translateY(-3px);
+box-shadow:0 15px 35px rgba(99,102,241,0.5);
+}
+
+.secondary{
+background:#1e293b;
+color:#e5e7eb;
+border:1px solid #334155;
+}
+
+.secondary:hover{
+background:#334155;
+transform:translateY(-3px);
+}
+
+.footer{
+text-align:center;
+padding:20px;
+font-size:13px;
+color:#64748b;
+border-top:1px solid rgba(255,255,255,0.05);
+}
+
+a{
+text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+<div class="logo"></div>
+<div class="nav-right">Multiplayer</div>
+</div>
+
+<div class="hero">
+
+<div class="card">
+
+<div class="title">Page Replacement Multiplayer</div>
+
+<p class="desc">
+Compete with other players and solve page replacement problems using FIFO, LRU, and Optimal algorithms in a real-time multiplayer experience.
+</p>
+
+<div class="buttons">
+
+<a href="host.html">
+<button class="primary">Create Game</button>
+</a>
+
+<a href="join.html">
+<button class="secondary">Join Game</button>
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+Operating Systems Multiplayer Learning Project
+</div>
+
+</body>
+</html>

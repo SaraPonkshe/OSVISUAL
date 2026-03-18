@@ -1,47 +1,238 @@
 <!doctype html>
-<html>
+<html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Play Memory Allocation</title>
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<title>Memory Allocation Game - Play</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter, sans-serif;
+}
+
+body{
+background:#0f172a;
+color:#e5e7eb;
+}
+
+/* NAVBAR */
+
+.navbar{
+background:#020617;
+padding:16px 40px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:1px solid #1e293b;
+}
+
+.logo{
+font-size:20px;
+font-weight:600;
+color:#6366f1;
+}
+
+.nav-right{
+font-size:14px;
+color:#9ca3af;
+}
+
+/* CONTAINER */
+
+.container{
+max-width:900px;
+margin:40px auto;
+padding:0 20px;
+}
+
+/* CARD */
+
+.card{
+background:#111827;
+border-radius:10px;
+padding:25px;
+margin-bottom:25px;
+border:1px solid #1f2937;
+box-shadow:0 5px 20px rgba(0,0,0,0.5);
+}
+
+/* BADGE */
+
+.badge{
+background:#1e293b;
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
+color:#93c5fd;
+}
+
+/* BUTTON */
+
+button{
+padding:10px 18px;
+border:none;
+border-radius:6px;
+font-size:14px;
+font-weight:500;
+cursor:pointer;
+background:#6366f1;
+color:white;
+transition:0.25s;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+
+/* ROW */
+
+.row{
+margin-top:15px;
+}
+
+/* SMALL TEXT */
+
+.small{
+font-size:13px;
+color:#9ca3af;
+margin-top:6px;
+}
+
+/* MEMORY GRID */
+
+#memory{
+display:flex;
+gap:10px;
+margin-top:20px;
+flex-wrap:wrap;
+}
+
+/* PROCESS BUTTONS */
+
+.process-selector{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-top:20px;
+}
+
+.process-selector button{
+background:#1e293b;
+}
+
+/* TABLE */
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+th{
+text-align:left;
+padding:12px;
+background:#020617;
+color:#818cf8;
+font-size:14px;
+border-bottom:1px solid #1e293b;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #1e293b;
+font-size:14px;
+}
+
+tr:hover{
+background:#1e293b;
+}
+
+</style>
+
 </head>
+
 <body>
-  <h1>Memory Allocation Game</h1>
 
-  <div id="waitingBox" class="card">
-    <h3>Waiting Room</h3>
-    <p id="status" class="small"></p>
-    <p class="small">Wait until host starts…</p>
-  </div>
 
-  <div id="gameBox" style="display:none;">
-    <div class="input-box">
-      <span class="badge">Question: <span id="qNum">-</span></span>
-      <p id="feedback" class="small"></p>
-    </div>
 
-    <div id="memory"></div>
-    <div id="processSelector" class="process-selector"></div>
+<div class="container">
 
-    <div class="row">
-      <button id="submitBtn">Submit Allocation</button>
-    </div>
+<!-- WAITING ROOM -->
 
-    <div id="finalBox" class="card" style="display:none;">
-      <h3>Final Leaderboard</h3>
-      <table class="table">
-        <thead>
-          <tr><th>#</th><th>Name</th><th>Score</th><th>Accuracy</th><th>Total Time</th><th>Answered</th></tr>
-        </thead>
-        <tbody id="lbBody"></tbody>
-      </table>
-    </div>
-  </div>
+<div id="waitingBox" class="card">
 
-  <script type="module">
-    import { initPlayPage } from "./mpPlayer.js";
-    initPlayPage();
-  </script>
+<h3>Waiting Room</h3>
+
+<p id="status" class="small"></p>
+
+<p class="small">Waiting for the host to start the game...</p>
+
+</div>
+
+
+<!-- GAME AREA -->
+
+<div id="gameBox" style="display:none;">
+
+<div class="card">
+
+<span class="badge">Question: <span id="qNum">-</span></span>
+
+<p id="feedback" class="small"></p>
+
+<div id="memory"></div>
+
+<div id="processSelector" class="process-selector"></div>
+
+<div class="row">
+<button id="submitBtn">Submit Allocation</button>
+</div>
+
+</div>
+
+
+<!-- FINAL LEADERBOARD -->
+
+<div id="finalBox" class="card" style="display:none;">
+
+<h3>Final Leaderboard</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>#</th>
+<th>Name</th>
+<th>Score</th>
+<th>Accuracy</th>
+<th>Total Time</th>
+<th>Answered</th>
+</tr>
+</thead>
+
+<tbody id="lbBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initPlayPage } from "./mpPlayer.js";
+initPlayPage();
+</script>
+
 </body>
 </html>

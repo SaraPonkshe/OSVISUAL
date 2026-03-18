@@ -1,30 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Join Game</title>
-  <link rel="stylesheet" href="style.css" />
+
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Join Game</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter, sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:
+radial-gradient(circle at 20% 20%, #1e293b, transparent 40%),
+radial-gradient(circle at 80% 30%, #4338ca, transparent 40%),
+radial-gradient(circle at 50% 80%, #065f46, transparent 40%),
+#020617;
+color:#e5e7eb;
+}
+
+/* CONTAINER */
+
+.container{
+text-align:center;
+}
+
+/* TITLE */
+
+h1{
+margin-bottom:30px;
+font-size:38px;
+background:linear-gradient(90deg,#818cf8,#22c55e,#06b6d4);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* CARD */
+
+.card{
+background:rgba(17,24,39,0.6);
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,0.05);
+border-radius:16px;
+padding:40px 35px;
+width:320px;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* INPUT */
+
+.input{
+width:100%;
+padding:12px;
+margin-top:8px;
+margin-bottom:18px;
+border-radius:8px;
+border:1px solid #334155;
+background:#020617;
+color:white;
+font-size:14px;
+}
+
+.input:focus{
+outline:none;
+border-color:#6366f1;
+box-shadow:0 0 10px rgba(99,102,241,0.5);
+}
+
+/* BUTTON */
+
+button{
+width:100%;
+padding:13px;
+border:none;
+border-radius:10px;
+font-size:15px;
+font-weight:500;
+cursor:pointer;
+background:linear-gradient(135deg,#6366f1,#22c55e);
+color:white;
+transition:0.25s;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 10px 25px rgba(99,102,241,0.5);
+}
+
+/* SMALL TEXT */
+
+.small{
+margin-top:15px;
+font-size:13px;
+color:#94a3b8;
+}
+
+label{
+font-size:14px;
+color:#cbd5f5;
+}
+
+</style>
+
 </head>
+
 <body>
-  <h1>Join Game</h1>
 
-  <div class="card">
-    <div>
-      <label><b>Game Code</b></label><br/>
-      <input id="code" class="input" placeholder="ABC123" />
-    </div>
-    <div>
-      <label><b>Your Name</b></label><br/>
-      <input id="name" class="input" placeholder="Type your name" />
-    </div>
-    <button id="joinBtn">Join</button>
-    <p class="small">You will wait until the host starts the game.</p>
-  </div>
+<div class="container">
 
-  <script type="module">
-    import { initJoinPage } from "./mpPlayer.js";
-    initJoinPage();
-  </script>
+<h1>Join Game</h1>
+
+<div class="card">
+
+<div>
+<label><b>Game Code</b></label><br/>
+<input id="code" class="input" placeholder="ABC123"/>
+</div>
+
+<div>
+<label><b>Your Name</b></label><br/>
+<input id="name" class="input" placeholder="Type your name"/>
+</div>
+
+<button id="joinBtn">Join Game</button>
+
+<p class="small">
+You will wait until the host starts the game.
+</p>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initJoinPage } from "./mpPlayer.js";
+initJoinPage();
+</script>
+
 </body>
 </html>
