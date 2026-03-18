@@ -6,7 +6,7 @@
   let messages = [];
   let isLoading = false;
 
-  const GROQ_API_KEY = "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";
+  const GROQ_API_KEY = "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";
 
   const SUGGESTIONS = [
     "Which processes were allocated?",

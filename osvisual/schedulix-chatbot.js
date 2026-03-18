@@ -6,7 +6,7 @@
   let messages = []; // { role: "user"|"assistant", content: string }
   let isLoading = false;
 
-  const GROQ_API_KEY = "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";
+  const GROQ_API_KEY = "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";
 
   const SUGGESTIONS = [
     "Which process waited the longest?",
