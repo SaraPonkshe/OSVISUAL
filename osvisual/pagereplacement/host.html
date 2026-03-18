@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<title>Page Replacement Game - Host Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter, sans-serif;
+}
+
+body{
+background:
+radial-gradient(circle at 20% 20%, #1e293b, transparent 40%),
+radial-gradient(circle at 80% 30%, #4338ca, transparent 40%),
+radial-gradient(circle at 50% 90%, #065f46, transparent 40%),
+#020617;
+color:#e5e7eb;
+min-height:100vh;
+}
+
+/* NAVBAR */
+
+.navbar{
+background:rgba(2,6,23,0.8);
+backdrop-filter:blur(10px);
+padding:16px 40px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.logo{
+font-size:20px;
+font-weight:600;
+background:linear-gradient(90deg,#818cf8,#22c55e);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.nav-right{
+font-size:14px;
+color:#9ca3af;
+}
+
+/* CONTAINER */
+
+.container{
+max-width:1100px;
+margin:40px auto;
+padding:0 20px;
+}
+
+.page-title{
+font-size:26px;
+font-weight:600;
+margin-bottom:25px;
+}
+
+/* CARD */
+
+.card{
+background:rgba(17,24,39,0.6);
+backdrop-filter:blur(16px);
+border-radius:14px;
+padding:25px;
+margin-bottom:25px;
+border:1px solid rgba(255,255,255,0.06);
+box-shadow:0 15px 40px rgba(0,0,0,0.6);
+}
+
+/* FORM GRID */
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+label{
+font-size:14px;
+color:#cbd5f5;
+font-weight:500;
+margin-bottom:6px;
+display:block;
+}
+
+input,select{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:1px solid #374151;
+background:#020617;
+color:white;
+font-size:14px;
+}
+
+input:focus,select:focus{
+outline:none;
+border-color:#6366f1;
+box-shadow:0 0 10px rgba(99,102,241,0.4);
+}
+
+/* BUTTONS */
+
+.button-row{
+display:flex;
+gap:12px;
+margin-top:20px;
+flex-wrap:wrap;
+}
+
+button{
+padding:11px 18px;
+border:none;
+border-radius:8px;
+font-size:14px;
+font-weight:500;
+cursor:pointer;
+transition:0.25s;
+}
+
+/* BUTTON GRADIENTS */
+
+#createRoomBtn{
+background:linear-gradient(135deg,#6366f1,#22c55e);
+color:white;
+}
+
+#startBtn{
+background:linear-gradient(135deg,#22c55e,#06b6d4);
+color:white;
+}
+
+#endBtn{
+background:linear-gradient(135deg,#ef4444,#f59e0b);
+color:white;
+}
+
+#downloadBtn{
+background:linear-gradient(135deg,#f59e0b,#ef4444);
+color:white;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 10px 25px rgba(0,0,0,0.6);
+}
+
+/* PLAYER BADGES */
+
+.players{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.player-badge{
+background:#1e293b;
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
+color:#93c5fd;
+}
+
+/* TABLE */
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+text-align:left;
+padding:12px;
+background:#020617;
+color:#818cf8;
+font-size:14px;
+border-bottom:1px solid #1e293b;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #1e293b;
+font-size:14px;
+}
+
+tr:hover{
+background:#1e293b;
+}
+
+/* SMALL TEXT */
+
+.small{
+font-size:13px;
+color:#9ca3af;
+display:block;
+margin-top:6px;
+}
+
+/* JOIN CODE */
+
+#codeBox{
+margin-top:18px;
+font-size:18px;
+font-weight:600;
+letter-spacing:2px;
+color:#a5b4fc;
+}
+
+h3{
+margin-bottom:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+<div class="logo">Page Replacement Game</div>
+<div class="nav-right">Host Dashboard</div>
+</div>
+
+<div class="container">
+
+<div class="page-title">Game Control Panel</div>
+
+<div class="card">
+
+<div class="form-grid">
+
+<div>
+<label>Algorithm</label>
+<select id="algorithm">
+<option value="FIFO">FIFO</option>
+<option value="LRU">LRU</option>
+<option value="Optimal">Optimal</option>
+</select>
+</div>
+
+<div>
+<label>Frames</label>
+<input type="number" id="frames" value="3" min="2" max="6"/>
+</div>
+
+</div>
+
+<div class="button-row">
+<button id="createRoomBtn">Create Game Room</button>
+<button id="startBtn">Start Game (Generate 10 Questions)</button>
+<button id="endBtn">End Game</button>
+<button id="downloadBtn">Download Leaderboard CSV</button>
+</div>
+
+<div id="codeBox"></div>
+<a id="joinLink" class="small" target="_blank"></a>
+
+</div>
+
+<div class="card">
+
+<h3>Players Joined</h3>
+<div id="playersList" class="players"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Realtime Leaderboard</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>#</th>
+<th>Name</th>
+<th>Score</th>
+<th>Accuracy</th>
+<th>Total Time</th>
+<th>Answered</th>
+</tr>
+</thead>
+
+<tbody id="lbBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script type="module">
+import { initHostPage } from "./mpHost.js";
+initHostPage();
+</script>
+
+</body>
+</html>

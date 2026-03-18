@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Play - Disk Scheduling</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h1>DISK SCHEDULING</h1>
+
+  <div id="waitingBox" class="card">
+    <h3>Waiting Room</h3>
+    <p id="status" class="small"></p>
+    <p class="small">Wait until the host starts…</p>
+  </div>
+
+  <div id="gameBox" style="display:none;">
+    <div class="input-box">
+      <span class="badge">Question: <span id="qNum">-</span></span>
+      <p id="questionText" class="small"></p>
+
+      <input type="text" id="studentAnswer" placeholder="Enter your sequence (comma separated)">
+      <div class="row">
+        <button id="submitBtn">Submit Answer</button>
+      </div>
+
+      <p id="feedback" class="small"></p>
+    </div>
+  </div>
+
+  <div id="finalBox" class="card" style="display:none;">
+    <h3>Leaderboard</h3>
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Name</th><th>Score</th><th>Accuracy</th><th>Total Time</th><th>Answered</th></tr>
+      </thead>
+      <tbody id="lbBody"></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initPlayPage } from "./mpPlayer.js";
+    initPlayPage();
+  </script>
+</body>
+</html>

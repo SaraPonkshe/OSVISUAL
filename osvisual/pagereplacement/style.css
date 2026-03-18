@@ -1,0 +1,76 @@
+body{
+  font-family:"Poppins",sans-serif;
+  background:radial-gradient(circle at top,#0b0b0b,#000);
+  color:#eee;
+  text-align:center;
+  padding:20px
+}
+h1{color:#00d4ff;text-shadow:0 0 8px #00d4ff;margin-bottom:20px}
+.input-box,.card{
+  background:rgba(25,25,25,.9);
+  padding:20px;
+  border-radius:12px;
+  display:inline-block;
+  border:1px solid #00d4ff44;
+  box-shadow:0 0 15px rgba(0,212,255,.2);
+  margin:10px auto;
+  max-width:min(980px,95vw);
+}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+select,input,button{
+  margin:6px;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #00d4ff55;
+  background:#111;
+  color:white
+}
+button{
+  cursor:pointer;
+  background:linear-gradient(90deg,#00d4ff,#00ffaa);
+  color:#000;
+  font-weight:bold;
+  transition:.3s
+}
+button:hover{transform:scale(1.05);box-shadow:0 0 10px #00ffaa77}
+.small{opacity:.9;font-size:.95rem}
+.badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid #00d4ff55;
+  background:#111
+}
+.table{
+  width:min(900px,95vw);
+  margin:12px auto;
+  border-collapse:collapse
+}
+.table th,.table td{border:1px solid #00d4ff33;padding:10px}
+.table th{color:#00d4ff;background:#0d0d0d}
+.correct{background:#145a32 !important;color:#00ff7f !important}
+.wrong{background:#5a1a1a !important;color:#ff6b6b !important}
+
+/* game table */
+#gameArea table{
+  border-collapse:collapse;
+  margin:0 auto;
+  background-color:#1b1b1b;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 0 15px rgba(0,212,255,0.15);
+}
+#gameArea th,#gameArea td{
+  border:1px solid #444;
+  padding:10px;
+  text-align:center;
+  width:55px;
+  font-size:15px;
+  color:#eee;
+}
+#gameArea th{background:#111;color:#00d4ff}
+#gameArea td.clickable:hover{
+  background:#333;
+  cursor:pointer;
+  box-shadow:inset 0 0 6px #00ffaa;
+}
