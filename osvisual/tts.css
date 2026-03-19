@@ -1,0 +1,211 @@
+/* ── FAB (Floating Action Button) ───────────────────────── */
+#tts-fab {
+  position: fixed;
+  bottom: 90px;          /* sits directly above chatbot bubble */
+  right: 20px;
+  z-index: 10000;
+
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+
+  background: #2c3e6b;   
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 1px 4px rgba(0,0,0,0.2);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+#tts-fab:hover {
+  background: #3a4f8a;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.38);
+  transform: scale(1.07);
+}
+
+#tts-fab:active {
+  transform: scale(0.95);
+}
+
+/* Pulse ring when actively reading */
+#tts-fab.tts-fab--playing::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 179, 237, 0.7);
+  animation: tts-pulse 1.4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tts-pulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ── Slide-up Panel ──────────────────────────────────────── */
+#tts-panel {
+  position: fixed;
+  bottom: 154px;         /* above the FAB */
+  right: 20px;
+  z-index: 9999;
+
+  width: 240px;
+  background: #1a2340;
+  color: #e8eaf6;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+
+  /* Hidden by default — slides up on open */
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+#tts-panel.tts-panel--open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* Panel header row */
+.tts-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  opacity: 0.9;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 10px;
+}
+
+/* Button row */
+.tts-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.tts-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.07);
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 6px 0;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.tts-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.15);
+}
+
+.tts-btn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+/* Play button accent */
+.tts-btn--play:not(:disabled) {
+  background: rgba(99,179,237,0.18);
+  border-color: rgba(99,179,237,0.4);
+  color: #90cdf4;
+}
+
+/* Speed row */
+.tts-speed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.tts-speed-label {
+  flex-shrink: 0;
+  min-width: 38px;
+}
+
+#tts-rate {
+  flex: 1;
+  accent-color: #90cdf4;
+  cursor: pointer;
+}
+
+#tts-rate-val {
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hint text */
+.tts-hint {
+  font-size: 11px;
+  opacity: 0.5;
+  margin: 0;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ── Highlighted element ─────────────────────────────────── */
+.tts-highlight {
+  background-color: #fff3cd !important;
+  border-radius: 4px;
+  outline: 2px solid #fff3cd;
+  outline-offset: 2px;
+  scroll-margin: 140px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tts-highlight {
+    background-color: rgba(245,158,11,0.2) !important;
+    outline-color: #fff3cd;
+  }
+}
+
+/* ── Clickable hover hint ────────────────────────────────── */
+.tts-clickable {
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.tts-clickable:hover {
+  background-color: rgba(44, 62, 107, 0.07);
+  border-radius: 3px;
+}
+
+/* ── Responsive adjustments ─────────────────────────────── */
+@media (max-width: 480px) {
+  #tts-panel {
+    width: calc(100vw - 32px);
+    right: 16px;
+  }
+
+  #tts-fab {
+    right: 16px;
+    bottom: 80px;
+  }
+}
